@@ -35,7 +35,6 @@ else {
 var login = new api.Login(api.LoginTypes.HTTP_BASIC);
 login.setUserAndPassword("alice", "pwalice"); // TODO login daten
 /*
- * TODO up/downvote
  * TODO fehlerbehandlung
  * TODO exampleservice frontend
  * TODO ROLE widget
@@ -110,7 +109,7 @@ var deleteComment = function (commentId) {
 
 var submitVote = function (commentId,upvote) {
 	var request = new api.Request("post", "comment/"+commentId+"/votes", upvote+"", function (data) {
-    document.getElementById("votes-"+commendId).innerHTML=renderRating(commentId,upvote ? 1 : -1,0); // TODO
+    document.getElementById("votes-"+commentId).innerHTML=renderRating(commentId,upvote ? 1 : -1,JSON.parse(data).rating);
 
 		console.log(data);
 	});
@@ -139,7 +138,7 @@ var renderComment = function (data) {
 		     + '<p>'+escapeHtml(data.body)+'</p></div>';
 
 
-	html += '<div class="votes" id="votes-\''+data.id+'\'">';
+	html += '<div class="votes" id="votes-'+data.id+'">';
   html+=renderRating(data.id,data.myRating,data.rating);
 	html += '</div>';
 

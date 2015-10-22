@@ -469,8 +469,13 @@ public class CommentService extends Service {
 			notes = "Add a vote")
 	public HttpResponse addVote(@PathParam("id") String commentId, @ContentParam String body) {
 		try {
-			_getComment(commentId).vote(getActiveAgent().getId(),body.equals("true"));
-			return new HttpResponse("Vote submitted", HttpURLConnection.HTTP_CREATED);
+			Comment c = _getComment(commentId);
+			c.vote(getActiveAgent().getId(),body.equals("true"));
+			
+			JSONObject response = new JSONObject();
+			response.put("rating", c.getRating());
+			
+			return new HttpResponse(response.toJSONString(), HttpURLConnection.HTTP_CREATED);
 		}
 		catch (PermissionException e) {
 			return new HttpResponse("Forbidden", HttpURLConnection.HTTP_FORBIDDEN);
