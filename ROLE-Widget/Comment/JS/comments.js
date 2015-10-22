@@ -1,3 +1,6 @@
+// TODO fehlerbehandlung
+// TODO ROLE widgets
+
 /**
  * Comment Widget to display a comment thread (and to interact with it).
  */
@@ -34,14 +37,9 @@ else {
 // login
 var login = new api.Login(api.LoginTypes.HTTP_BASIC);
 login.setUserAndPassword("alice", "pwalice"); // TODO login daten
-/*
- * TODO fehlerbehandlung
- * TODO exampleservice frontend
- * TODO ROLE widget
- */
+
 
 var requestSender = new api.RequestSender("http://localhost:8080/comments", login);
-
 
 $(document).ready(function () {
   init();
@@ -196,10 +194,10 @@ var entityMap = {
 	    '"': '&quot;',
 	    "'": '&#39;',
 	    "/": '&#x2F;'
-	  };
+};
 
-	  function escapeHtml(string) {
+function escapeHtml(string) {
 	    return String(string).replace(/[&<>"'\/]/g, function (s) {
 	      return entityMap[s];
 	    });
-	  }
+}
