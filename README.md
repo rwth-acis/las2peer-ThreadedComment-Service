@@ -27,8 +27,8 @@ Build & Run instructions
 Run ``ant build`` to build the service. Two service jars will be generated: the CommentService and the CommentExampleService (for
 testing and demonstration purposes).
 
-To test the service, run ``ant run`` and start a http server at ``/ROLE-Widget/`` and navigate to ``http://.../CommentExample/commentexample.html``
-or use the provided ROLE-Widgets.
+To test the service, run ``ant run`` and start a http server (at port 8081, otherwise you have to change the URLs in the widgets source files)
+at ``/ROLE-Widget/`` and navigate to ``http://.../CommentExample/commentexample.html`` or use the provided ROLE-Widgets.
 
 How to use in your service
 --------------------------

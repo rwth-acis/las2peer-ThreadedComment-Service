@@ -15,20 +15,20 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <title>Comments</title>
-  <link rel="stylesheet" href="$yourServerURL$/CSS/style.css" />
+  <link rel="stylesheet" href="http://localhost:8081/Comment/CSS/style.css" />
 
 
-  <script src="$yourServerURL$/JS/ServiceAPI/moduleHelper.js"></script>
+  <script src="http://localhost:8081/Comment/JS/ServiceAPI/moduleHelper.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 
   <script src="http://open-app.googlecode.com/files/openapp.js"></script>
   <script src="http://dbis.rwth-aachen.de/gadgets/iwc/lib/iwc.js"></script>    
-  <script src="$yourServerURL$/JS/ServiceAPI/widgetAPI.js"></script>
+  <script src="http://localhost:8081/Comment/JS/ServiceAPI/widgetAPI.js"></script>
     
-  <script src="$yourServerURL$/JS/ServiceAPI/b64.js"></script>
-  <script src="$yourServerURL$/JS/ServiceAPI/serviceAPI.js"></script>
+  <script src="http://localhost:8081/Comment/JS/ServiceAPI/b64.js"></script>
+  <script src="http://localhost:8081/Comment/JS/ServiceAPI/serviceAPI.js"></script>
   
-  <script src="$yourServerURL$/JS/comments.js"></script>
+  <script src="http://localhost:8081/Comment/JS/comments.js"></script>
 </head>
 <body>
   <div id="main">

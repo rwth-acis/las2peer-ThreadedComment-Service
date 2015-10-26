@@ -1,5 +1,3 @@
-// TODO ROLE widgets
-
 /**
  * Comment Widget to display a comment thread (and to interact with it).
  */
@@ -35,7 +33,7 @@ else {
 
 // login
 var login = new api.Login(api.LoginTypes.HTTP_BASIC);
-login.setUserAndPassword("alice", "pwalice"); // TODO login daten
+login.setUserAndPassword("alice", "pwalice"); // TODO get login from somewhere
 
 
 var requestSender = new api.RequestSender("http://localhost:8080/comments", login);
@@ -45,6 +43,7 @@ $(document).ready(function () {
 });
 
 var init = function () {
+	showComments("");
 };
 
 var context = {
@@ -52,7 +51,17 @@ var context = {
   writer: false
 };
 
+var clear = function() {
+	document.getElementById('main').innerHTML = "no thread selected";
+}
+
 var showComments = function (threadId) {
+	if (threadId=="") {
+		clear();
+		return;
+	}
+		
+	
 	var request = new api.Request("get", "threads/"+threadId, "", function (data) {
     data = JSON.parse(data);
 

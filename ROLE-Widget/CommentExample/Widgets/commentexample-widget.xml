@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <Module>
 	<ModulePrefs
-		title="Comments"
-		description="Connects to a LAS2peer Comment Service"
+		title="Comments Example"
+		description="Connects to a LAS2peer Comment Example Service"
 		author="Jasper Nalbach"
 		author_email="nalbach@dbis.rwth-aachen.de"
 		height="400"
@@ -15,20 +15,20 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <title>Comment Example</title>
-  <link rel="stylesheet" href="$yourServerURL$/CSS/style.css" />
+  <link rel="stylesheet" href="http://localhost:8081/CommentExample/CSS/style.css" />
 
 
-  <script src="$yourServerURL$/JS/ServiceAPI/moduleHelper.js"></script>
+  <script src="http://localhost:8081/CommentExample/JS/ServiceAPI/moduleHelper.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 
   <script src="http://open-app.googlecode.com/files/openapp.js"></script>
   <script src="http://dbis.rwth-aachen.de/gadgets/iwc/lib/iwc.js"></script>
-  <script src="$yourServerURL$/JS/ServiceAPI/widgetAPI.js"></script>
+  <script src="http://localhost:8081/CommentExample/JS/ServiceAPI/widgetAPI.js"></script>
 
-  <script src="$yourServerURL$/JS/ServiceAPI/b64.js"></script>
-  <script src="$yourServerURL$/JS/ServiceAPI/serviceAPI.js"></script>
+  <script src="http://localhost:8081/CommentExample/JS/ServiceAPI/b64.js"></script>
+  <script src="http://localhost:8081/CommentExample/JS/ServiceAPI/serviceAPI.js"></script>
 
-  <script src="$yourServerURL$/JS/commentexample.js"></script>
+  <script src="http://localhost:8081/CommentExample/JS/commentexample.js"></script>
 </head>
 <body>
   <div id="main">

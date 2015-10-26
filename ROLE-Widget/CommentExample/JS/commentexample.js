@@ -22,7 +22,7 @@ if (typeof gadgets !== "undefined" && gadgets !== null) {
 
 // login
 var login = new api.Login(api.LoginTypes.HTTP_BASIC);
-login.setUserAndPassword("alice", "pwalice"); // TODO login daten
+login.setUserAndPassword("alice", "pwalice"); // TODO get login from somewhere
 
 var requestSender = new api.RequestSender("http://localhost:8080/commentexample", login);
 
@@ -77,6 +77,9 @@ var showThreads = function () {
 var addThread = function (owner,writer,reader) {
 	var request = new api.Request("post", "threads", "{owner:"+owner+", writer:"+writer+", reader:"+reader+"}", function (data) {
 		document.getElementById("threads").innerHTML+=renderThread(data);
+		
+		if (widget)
+			sendIntent(data);
 	});
 	requestSender.sendRequestObj(request);
 }
@@ -84,6 +87,9 @@ var addThread = function (owner,writer,reader) {
 var deleteThread = function (threadId) {
 	var request = new api.Request("delete", "threads/"+threadId, "", function (data) {
 		document.getElementById('thread-'+threadId).parentElement.removeChild(document.getElementById('thread-'+threadId));
+		
+		if (widget)
+			sendIntent("");
 	});
 	requestSender.sendRequestObj(request);
 }
