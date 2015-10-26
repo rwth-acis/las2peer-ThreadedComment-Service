@@ -1,6 +1,7 @@
 package i5.las2peer.services.commentService.storage;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Hashtable;
 
 import i5.las2peer.p2p.AgentNotKnownException;
 import i5.las2peer.p2p.ArtifactNotFoundException;
@@ -19,6 +20,8 @@ import i5.las2peer.tools.SerializationException;
 public class DHTStorage extends Storage {
 	
 	private static final String ENVELOPE_PREFIX = "COMMENT";
+	
+	private Hashtable<Long, GroupAgent> groupAgents = new Hashtable <Long, GroupAgent> ();
 	
 	public DHTStorage(Context context, ServiceAgent service) {
 		super(context,service);
@@ -68,7 +71,12 @@ public class DHTStorage extends Storage {
 			// create owner group using writer list
 			Agent[] ownerList = new Agent[storable.getWriter().size()];
 			for (int i=0;i<ownerList.length;i++) {
-				ownerList[i] = getAgent(storable.getWriter().get(i));
+				try {
+					ownerList[i] = requestAgent(storable.getWriter().get(i));
+				}
+				catch(Exception e) {
+					ownerList[i] = getContext().getAgent(storable.getWriter().get(i));
+				}
 			}
 			
 			GroupAgent group = GroupAgent.createGroupAgent(ownerList);
@@ -87,9 +95,6 @@ public class DHTStorage extends Storage {
 			
 			// store group
 			getContext().getLocalNode().storeAgent(group);
-			
-			// this is a workaround
-			//group = getContext().requestGroupAgent(group.getId());
 						
 			// set owner in Storable
 			storable.setOwner(group.getId());
@@ -100,7 +105,7 @@ public class DHTStorage extends Storage {
 		    
 		    // add reader
 		    for (Long a : storable.getReader())
-		    	envelope.addReader(getAgent(a));
+		    	envelope.addReader(getContext().getAgent(a));
 		    
 		    envelope.close();
 		    
@@ -129,7 +134,7 @@ public class DHTStorage extends Storage {
 		
 		try {		
 			// get owner agent
-			GroupAgent ownerAgent = (GroupAgent)getAgent(storable.getOwner());
+			GroupAgent ownerAgent = (GroupAgent)requestAgent(storable.getOwner());
 			
 			// open envelope
 			if (!env.isOpen())
@@ -208,19 +213,18 @@ public class DHTStorage extends Storage {
 			}
 	}
 
-	@Override
-	public Agent getAgent(long agentId) throws StorageException {
+	// needed until recursive group unlocking is implemented in core
+	// tries to unlock the given agent
+	public Agent requestAgent(long agentId) throws StorageException, PermissionException {
 		Agent current = getContext().getMainAgent();
-		
-		/*
-		// check if it's the service agent
-		if (getService().getId() == agentId)
-			return getService();
-		*/
-		
+				
 		// check if it's the current agent
 		if (current.getId() == agentId) 
 			return current;
+		
+		// check if it's a known GroupAgent
+		GroupAgent g = groupAgents.get(agentId);
+		if (g!=null) return g;
 		
 		// get the agent from storage
 		Agent agent;
@@ -243,27 +247,15 @@ public class DHTStorage extends Storage {
 				catch (AgentNotKnownException | L2pSecurityException | SerializationException | CryptoException e) {
 				}
 				
+				groupAgents.put(agentId, group);
 				return group;
 			}
-			/*
-			else if (group.isMemberRecursive(getService())) {
-				// unlock the group (using the service agent)
-				try {
-					unlockGroupAgentRecursive(group,getService());
-				}
-				catch (AgentNotKnownException | L2pSecurityException | SerializationException | CryptoException e) {
-				}
-				
-				return group;
-			}*/
 			else {
-				// unlocking impossible - return the group
-				return group;
+				throw new PermissionException("requesting Agent failed");
 			}
 		}
 		else {
-			// simply return the requested agent
-			return agent;
+			throw new PermissionException("requesting Agent failed");
 		}
 	}
 	
@@ -293,17 +285,21 @@ public class DHTStorage extends Storage {
 	}
 	
 	// method to unlock an Evnelope using the current context until Envelope->openEnvelope() is fixed
-	private void tryOpen(Envelope envelope) throws StorageException, DecodingFailedException, L2pSecurityException {
+	private void tryOpen(Envelope envelope) throws StorageException, DecodingFailedException, L2pSecurityException, PermissionException {
 		try {
 			envelope.open ( getContext().getMainAgent() );
 		}
 		catch ( L2pSecurityException e ) {
 			for ( long groupId : envelope.getReaderGroups() ) {
-				GroupAgent group = (GroupAgent) getAgent(groupId);
-					
-				if ( group != null && !group.isLocked() ) {
+				try {
+					GroupAgent group = (GroupAgent)requestAgent(groupId);
 					envelope.open ( group );
 					return;
+				}
+				catch (PermissionException e1) {
+				}
+				catch (Exception e1) {
+					throw e1;
 				}
 			}
 			throw e;

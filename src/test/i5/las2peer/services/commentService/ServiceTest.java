@@ -202,7 +202,7 @@ public class ServiceTest {
 			// vote comment
 			ClientResponse result8 = cEve.sendRequest("POST", mainPath + "comment/"+commentId+"/votes", "true");
 			assertEquals(201, result8.getHttpCode());
-			assertTrue(result8.getResponse().trim().contains("Vote submitted"));
+			assertTrue(result8.getResponse().trim().contains("1"));
 			
 			System.out.println("AddVote: " + result8.getResponse().trim());
 			

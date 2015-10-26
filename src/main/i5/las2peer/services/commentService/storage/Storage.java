@@ -90,12 +90,4 @@ public abstract class Storage {
 	 * @throws StorageException
 	 */
 	public abstract boolean hasPrivileges(long agentId) throws StorageException;
-	
-	/**
-	 * Get an Agent by id. Tries to get an unlocked instance from the context.
-	 * @param agentId The requested agent id.
-	 * @return the agent
-	 * @throws StorageException
-	 */
-	public abstract Agent getAgent(long agentId) throws StorageException;
 }
