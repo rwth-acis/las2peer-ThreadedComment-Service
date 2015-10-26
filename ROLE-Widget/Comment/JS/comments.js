@@ -1,4 +1,3 @@
-// TODO fehlerbehandlung
 // TODO ROLE widgets
 
 /**
@@ -60,13 +59,28 @@ var showComments = function (threadId) {
     context.admin = data.isAdmin;
     context.writer = data.isWriter;
 
-		var html = '<div id="thread-'+threadId+'">';
-		html += renderCommentThread(data);
+		var html = '<div id="thread-'+threadId+'" class="thread">';
+		html += renderComments(data);
+    html += renderAddForm(threadId);
 		html += '</div>';
 
 		document.getElementById('main').innerHTML = html;
 	});
 	requestSender.sendRequestObj(request);
+}
+
+var showReplys = function (commentId) {
+  var request = new api.Request("get", "comment/"+commentId+"/comments", "", function (data) {
+    data = JSON.parse(data);
+
+    var html = '<div id="thread-'+commentId+'" class="replys">';
+    html += renderComments(data);
+    html += renderReplyForm(commentId);
+    html += '</div>';
+
+    document.getElementById('comment-'+commentId).getElementsByClassName("replyPlaceholder")[0].innerHTML = html;
+  });
+  requestSender.sendRequestObj(request);
 }
 
 var addComment = function (threadId,body) {
@@ -76,11 +90,18 @@ var addComment = function (threadId,body) {
 	requestSender.sendRequestObj(request);
 }
 
+var addCommentReply = function (commentId,body) {
+	var request = new api.Request("post", "comment/"+commentId+"/comments", body, function (data) {
+		getComment(data,commentId);
+	});
+	requestSender.sendRequestObj(request);
+}
+
 var getComment = function(commentId, threadId) {
 	var request = new api.Request("get", "comment/"+commentId, "", function (data) {
 		data = JSON.parse(data);
 
-		var html ='<div id="comment-'+data.id+'">';
+		var html ='<div id="comment-'+data.id+'" class="comment">';
 		html+=renderComment(data);
 		html+='</div>';
 
@@ -114,26 +135,41 @@ var submitVote = function (commentId,upvote) {
 	requestSender.sendRequestObj(request);
 }
 
-var renderCommentThread = function (data) {
+var renderComments = function (data) {
 	var html='<div class="comments">';
 
 	for (var i=0;i<data.comments.length;i++) {
-		html+='<div id="comment-'+data.comments[i].id+'">';
+		html+='<div id="comment-'+data.comments[i].id+'" class="comment">';
 		html+=renderComment(data.comments[i]);
 		html+='</div>';
 	}
 
 	html+="</div>";
 
-  if (context.writer)
-	 html+='<div class="add"><form onsubmit="submitAddForm(this);return false;"><textarea name="body"></textarea><br /><input type="hidden" name="threadId" value="'+data.id+'" /><input type="submit" value="Add" /></form></div>';
-
 	return html;
 }
 
+var renderAddForm = function (threadId) {
+  var html='';
+
+  if (context.writer)
+  	html+='<div class="add"><form onsubmit="submitAddForm(this);return false;"><textarea name="body"></textarea><br /><input type="hidden" name="threadId" value="'+threadId+'" /><input type="submit" value="Add" /></form></div>';
+
+  return html;
+}
+
+var renderReplyForm = function (commentId) {
+  var html='';
+
+  if (context.writer)
+  	html+='<div class="add"><form onsubmit="submitReplyForm(this);return false;"><textarea name="body"></textarea><br /><input type="hidden" name="commentId" value="'+commentId+'" /><input type="submit" value="Add" /></form></div>';
+
+  return html;
+}
+
 var renderComment = function (data) {
-	var html = '<div class="content"><p><small>'+data.author.name+', '+data.date+'</small></p>'
-		     + '<p>'+escapeHtml(data.body)+'</p></div>';
+	var html = '<div class="title">'+data.author.name+', '+data.date+'</div>'
+		     + '<div class="content">'+escapeHtml(data.body)+'</div>';
 
 
 	html += '<div class="votes" id="votes-'+data.id+'">';
@@ -151,7 +187,9 @@ var renderComment = function (data) {
     html+='</div>';
 
 		html+='<div class="edit" id="edit-'+data.id+'" hidden><form onsubmit="submitEditForm(this);return false;"><textarea name="body">'+escapeHtml(data.body)+'</textarea><br /><input type="hidden" name="id" value="'+data.id+'" /><input type="submit" value="Edit" /></form></div>';
-	}
+
+    html += '<div class="replyPlaceholder"><button onclick="showReplys(\''+data.id+'\')">Replys ('+data.replyCount+')</button></div>';
+  }
 
 	html+='<div></div>';
 
@@ -171,6 +209,11 @@ var renderRating = function(commentId,myRating,rating) {
 
 var submitAddForm = function(target) {
 	addComment(target.elements[1].value,target.elements[0].value);
+	target.reset();
+}
+
+var submitReplyForm = function(target) {
+	addCommentReply(target.elements[1].value,target.elements[0].value);
 	target.reset();
 }
 

@@ -1,8 +1,8 @@
 ﻿body {
     height:100%;
     width:100%;
-    
-    min-width: 250px; 
+
+    min-width: 250px;
     min-height:350px;
     overflow-y:auto!important;
     overflow-x:auto!important;
@@ -15,4 +15,47 @@ html {
     padding:0;
     overflow-y:auto!important;
     overflow-x:auto!important;
+}
+
+
+.thread {
+
+}
+
+.comment, .add {
+  padding:1rem;
+  border-top: solid 0.1rem #999;
+  border-bottom: solid 0.1rem #999;
+}
+
+.comment .title {
+  color:#999;
+}
+
+.comment .content {
+
+}
+
+.comment .votes {
+  font-size:0.8rem;
+}
+
+.comment .actions {
+  font-size:0.8rem;
+}
+
+.comment .edit {
+
+}
+
+.comment .replyPlaceholder {
+
+}
+
+.comment .comments {
+  font-size:0.9em;
+}
+
+.add textarea {
+  width:100%;
 }
