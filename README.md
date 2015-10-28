@@ -8,6 +8,8 @@ This is a [LAS2peer](https://github.com/rwth-acis/las2peer/) service allowing ot
 Other services can create a comment thread (via RMI) and set up permissions. Users post comment to this thread using a REST api.
 The service makes heavy use of the distributed storage of las2peer. All user content is encrypted using UserAgents and GroupAgents
 in order to be independent from specific ServiceAgents.
+This means that the service can be deployed everywhere on the network while each instance uses the same data.
+
 There is also a CommentExampleService to show how to call the CommentService's RMI methods.
 ROLE widgets are provided for both services.
 
