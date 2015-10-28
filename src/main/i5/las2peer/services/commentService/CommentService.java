@@ -75,28 +75,22 @@ import net.minidev.json.JSONObject;
 		))
 public class CommentService extends Service {
 	
-	private Storage storage;
-
 	public CommentService() {
 		setFieldValues();
 	}
 
 	/**
-	 * Get a storage for the current context
+	 * Create a new storage for the current context
 	 * @return A Storage with the current context
 	 * @throws StorageException 
 	 */
 	private Storage getStorage() throws StorageException {	
 		try {
-			if (this.storage==null || this.storage.getContext() != this.getContext())
-				this.storage = new DHTStorage(this.getContext(),this.getAgent());
+			return new DHTStorage(this.getContext(),this.getAgent());
 		}
 		catch(AgentNotKnownException e) {
 			throw new StorageException("Storage could not be created", e);
 		}
-		
-		
-		return this.storage;
 	}
 	
 	
@@ -204,6 +198,8 @@ public class CommentService extends Service {
 			notes = "Get comment thread including comments")
 	public HttpResponse getCommentThread(@PathParam("id") String threadId) {
 		try {
+			Storage storage = getStorage();
+			
 			CommentThread thread = _getCommentThread(threadId);
 			List<Comment> comments = thread.getComments();
 			
@@ -214,8 +210,8 @@ public class CommentService extends Service {
 			
 			JSONObject response = new JSONObject();
 			response.put("id",thread.getId());
-			response.put("isAdmin", getStorage().hasPrivileges(thread.getPermissions().owner) );
-			response.put("isWriter", getStorage().hasPrivileges(thread.getPermissions().owner) || getStorage().hasPrivileges(thread.getPermissions().writer) );
+			response.put("isAdmin", storage.hasPrivileges(thread.getPermissions().owner) );
+			response.put("isWriter", storage.hasPrivileges(thread.getPermissions().owner) || storage.hasPrivileges(thread.getPermissions().writer) );
 			response.put("comments", list);
 			
 			return new HttpResponse(response.toJSONString(), HttpURLConnection.HTTP_OK);
