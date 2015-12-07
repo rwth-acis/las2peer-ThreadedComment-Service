@@ -421,7 +421,7 @@ public class CommentService extends Service {
 	@Path("/comment/{id}")
 	@Produces(MediaType.TEXT_PLAIN)
 	@ApiResponses(value = {
-			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Deleted"),
+			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Deleted resource"),
 			@ApiResponse(code = HttpURLConnection.HTTP_FORBIDDEN, message = "Forbidden"),
 			@ApiResponse(code = HttpURLConnection.HTTP_NOT_FOUND, message = "Not Found"),
 			@ApiResponse(code = HttpURLConnection.HTTP_INTERNAL_ERROR, message = "Internal Server Error")
@@ -431,18 +431,19 @@ public class CommentService extends Service {
 	public HttpResponse deleteComment(@PathParam("id") String id) {
 		try {
 			Comment comment = _getComment(id);
+			String response = _serializeComment(comment,getContext().getAgent(comment.getAgentId())).toJSONString();
 			comment.delete();
-			return new HttpResponse("Deleted", HttpURLConnection.HTTP_OK);
+			return new HttpResponse(response, HttpURLConnection.HTTP_OK);
 		}
 		catch (PermissionException e) {
 			return new HttpResponse("Forbidden", HttpURLConnection.HTTP_FORBIDDEN);
 		}
-		catch (StorageException e) {
-			e.printStackTrace();
-			return new HttpResponse("Internal Server Error", HttpURLConnection.HTTP_INTERNAL_ERROR);
-		}
 		catch (NotFoundException e) {
 			return new HttpResponse("Not Found", HttpURLConnection.HTTP_NOT_FOUND);
+		}
+		catch (StorageException | AgentNotKnownException e) {
+			e.printStackTrace();
+			return new HttpResponse("Internal Server Error", HttpURLConnection.HTTP_INTERNAL_ERROR);
 		}
 	}
 	

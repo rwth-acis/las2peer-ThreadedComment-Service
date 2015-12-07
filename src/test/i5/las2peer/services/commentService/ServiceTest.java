@@ -63,12 +63,12 @@ public class ServiceTest {
 		node.storeAgent(MockAgentFactory.getAbel());
 		node.launch();
 		
-		ServiceAgent testService = ServiceAgent.generateNewAgent(testCommentService, "a pass");
+		ServiceAgent testService = ServiceAgent.createServiceAgent(testCommentService, "a pass");
 		testService.unlockPrivateKey("a pass");
 
 		node.registerReceiver(testService);
 		
-		ServiceAgent testServiceExample = ServiceAgent.generateNewAgent(testCommentExampleService, "a pass");
+		ServiceAgent testServiceExample = ServiceAgent.createServiceAgent(testCommentExampleService, "a pass");
 		testServiceExample.unlockPrivateKey("a pass");
 
 		node.registerReceiver(testServiceExample);
@@ -254,7 +254,7 @@ public class ServiceTest {
 			// delete comment
 			ClientResponse result15 = cAdam.sendRequest("DELETE", mainPath + "comment/"+replyId, "");
 			assertEquals(200,result15.getHttpCode());
-			assertTrue(result15.getResponse().contains("Deleted"));
+			assertTrue(result15.getResponse().contains(replyId));
 
 			System.out.println("DeleteComment: "+ result15.getResponse().trim());
 			
