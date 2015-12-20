@@ -13,15 +13,13 @@ import i5.las2peer.security.ServiceAgent;
  */
 public abstract class Storage {
 	private Context context;
-	private ServiceAgent service;
 	
 	/**
 	 * Create a new Storage object
 	 * @param context Usually the context of the service
 	 */
-	public Storage(Context context, ServiceAgent service) {
+	public Storage(Context context) {
 		this.context = context;
-		this.service = service;
 	}
 	
 	/**
@@ -31,14 +29,6 @@ public abstract class Storage {
 	 */
 	public Context getContext() {
 		return context;
-	}
-	
-	/**
-	 * Get the current service agent
-	 * @return the service agent
-	 */
-	public ServiceAgent getService() {
-		return this.service;
 	}
 	
 	/**
@@ -82,12 +72,4 @@ public abstract class Storage {
 	 * @throws NotFoundException 
 	 */
 	public abstract void delete(Class<? extends Storable> cls, String id) throws StorageException, PermissionException, NotFoundException;
-	
-	/**
-	 * Checks if the current active agent is the given agent or is in the given group (recursive).
-	 * @param agentId The given agent/group
-	 * @return true, if the current agent has privileges of the given agent
-	 * @throws StorageException
-	 */
-	public abstract boolean hasPrivileges(long agentId) throws StorageException;
 }

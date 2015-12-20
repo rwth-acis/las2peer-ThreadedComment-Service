@@ -1,6 +1,8 @@
 package i5.las2peer.services.commentService.data;
 
 
+import i5.las2peer.p2p.AgentNotKnownException;
+import i5.las2peer.security.AgentLockedException;
 import i5.las2peer.services.commentService.storage.PermissionException;
 import i5.las2peer.services.commentService.storage.Storable;
 import i5.las2peer.services.commentService.storage.StorableSharedPointer;
@@ -62,8 +64,12 @@ public class CommentThread extends Storable {
 	 */
 	public void addComment(Comment comment) throws StorageException, PermissionException {
 		// check permissions to avoid storage "zombies" (otherwise a comment object may be stored but never attached to a thread)
-		if (!getStorage().hasPrivileges(permissions.writer) && !getStorage().hasPrivileges(permissions.owner))
-			throw new PermissionException("Permission denied (manual check)");
+		try {
+			if (!getStorage().getContext().hasAccess(permissions.writer) && !getStorage().getContext().hasAccess(permissions.owner))
+				throw new PermissionException("Permission denied (manual check)");
+		} catch (AgentNotKnownException | AgentLockedException e) {
+			throw new PermissionException("Permission denied (manual check)", e);
+		}
 			
 		this.comments.get().addComment(comment);
 	}
@@ -88,8 +94,12 @@ public class CommentThread extends Storable {
 	
 	@Override
 	public void delete() throws StorageException, PermissionException {
-		if (!getStorage().hasPrivileges(permissions.owner))
-			throw new PermissionException("Permission denied (manual check)");
+		try {
+			if (!getStorage().getContext().hasAccess(permissions.owner))
+				throw new PermissionException("Permission denied (manual check)");
+		} catch (AgentNotKnownException | AgentLockedException e) {
+			throw new PermissionException("Permission denied (manual check)", e);
+		}
 		
 		super.delete();
 	}

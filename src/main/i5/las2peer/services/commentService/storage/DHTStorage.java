@@ -21,8 +21,8 @@ public class DHTStorage extends Storage {
 	
 	private static final String ENVELOPE_PREFIX = "COMMENT";
 	
-	public DHTStorage(Context context, ServiceAgent service) {
-		super(context,service);
+	public DHTStorage(Context context) {
+		super(context);
 	}
 	
 	private String getEnvelopeName(String id) {
@@ -70,7 +70,7 @@ public class DHTStorage extends Storage {
 			Agent[] ownerList = new Agent[storable.getWriter().size()];
 			for (int i=0;i<ownerList.length;i++) {
 				try {
-					ownerList[i] = requestAgent(storable.getWriter().get(i));
+					ownerList[i] = getContext().requestAgent(storable.getWriter().get(i));
 				}
 				catch(Exception e) {
 					ownerList[i] = getContext().getAgent(storable.getWriter().get(i));
@@ -190,33 +190,5 @@ public class DHTStorage extends Storage {
 		}
 
 		return env;
-	}
-
-	@Override
-	public boolean hasPrivileges(long agentId) throws StorageException {
-			Agent agent;
-			try {
-				agent = getContext().getAgent(agentId);
-			}
-			catch (AgentNotKnownException e) {
-				throw new StorageException(e);
-			}
-			Agent current = getContext().getMainAgent();
-			
-			if (agent instanceof GroupAgent) {
-				return ((GroupAgent)agent).isMemberRecursive(current);
-			}
-			else {
-				return agent.getId() == current.getId();
-			}
-	}
-	
-	public Agent requestAgent(long agentId) throws AgentNotKnownException, L2pSecurityException {
-		Agent current = getContext().getMainAgent();
-		
-		// check if it's the current agent
-		if (current.getId() == agentId) 
-			return current;
-		else return getContext().requestGroupAgent(agentId);
 	}
 }

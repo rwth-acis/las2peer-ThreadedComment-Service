@@ -1,5 +1,7 @@
 package i5.las2peer.services.commentService.data;
 
+import i5.las2peer.p2p.AgentNotKnownException;
+import i5.las2peer.security.AgentLockedException;
 import i5.las2peer.services.commentService.storage.PermissionException;
 import i5.las2peer.services.commentService.storage.Storable;
 import i5.las2peer.services.commentService.storage.StorableSharedPointer;
@@ -135,10 +137,16 @@ public class Comment extends Storable {
 	 * @param body New comment
 	 * @throws StorageException
 	 * @throws PermissionException
+	 * @throws AgentLockedException 
+	 * @throws AgentNotKnownException 
 	 */
 	public void setBody(String body) throws StorageException, PermissionException {
-		if (!getStorage().hasPrivileges(getAgentId()))
-			throw new PermissionException("Permission denied (manual check)");
+		try {
+			if (!getStorage().getContext().hasAccess(getAgentId()))
+				throw new PermissionException("Permission denied (manual check)");
+		} catch (AgentNotKnownException | AgentLockedException e) {
+			throw new PermissionException("Permission denied (manual check)", e);
+		}
 		
 		this.body = body;
 		this.edited = true;
@@ -153,8 +161,12 @@ public class Comment extends Storable {
 	 * @throws PermissionException
 	 */
 	public void vote(long agentId, boolean upvote) throws StorageException, PermissionException {
-		if (!getStorage().hasPrivileges(permissions.writer) && !getStorage().hasPrivileges(permissions.owner))
-			throw new PermissionException("Permission denied (manual check)");
+		try {
+			if (!getStorage().getContext().hasAccess(permissions.writer) && !getStorage().getContext().hasAccess(permissions.owner))
+				throw new PermissionException("Permission denied (manual check)");
+		} catch (AgentNotKnownException | AgentLockedException e) {
+			throw new PermissionException("Permission denied (manual check)", e);
+		}
 		
 		this.votes.get().vote(agentId, upvote);
 	}
@@ -186,8 +198,12 @@ public class Comment extends Storable {
 	 * @throws PermissionException
 	 */
 	public void addComment(Comment comment) throws StorageException, PermissionException {
-		if (!getStorage().hasPrivileges(permissions.writer) && !getStorage().hasPrivileges(permissions.owner))
-			throw new PermissionException("Permission denied (manual check)");
+		try {
+			if (!getStorage().getContext().hasAccess(permissions.writer) && !getStorage().getContext().hasAccess(permissions.owner))
+				throw new PermissionException("Permission denied (manual check)");
+		} catch (AgentNotKnownException | AgentLockedException e) {
+			throw new PermissionException("Permission denied (manual check)", e);
+		}
 		
 		this.comments.get().addComment(comment);
 	}
@@ -214,8 +230,12 @@ public class Comment extends Storable {
 	
 	@Override
 	public void delete() throws StorageException, PermissionException {
-		if (!getStorage().hasPrivileges(getAgentId()) && !getStorage().hasPrivileges(permissions.owner))
-			throw new PermissionException("Permission denied (manual check)");
+		try {
+			if (!getStorage().getContext().hasAccess(getAgentId()) && !getStorage().getContext().hasAccess(permissions.owner))
+				throw new PermissionException("Permission denied (manual check)");
+		} catch (AgentNotKnownException | AgentLockedException e) {
+			throw new PermissionException("Permission denied (manual check)", e);
+		}
 		
 		super.delete();
 	}

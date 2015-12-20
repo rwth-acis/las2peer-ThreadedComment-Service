@@ -24,6 +24,7 @@ import i5.las2peer.restMapper.annotations.Version;
 import i5.las2peer.restMapper.tools.ValidationResult;
 import i5.las2peer.restMapper.tools.XMLCheck;
 import i5.las2peer.security.Agent;
+import i5.las2peer.security.AgentLockedException;
 import i5.las2peer.security.UserAgent;
 import i5.las2peer.services.commentService.data.Comment;
 import i5.las2peer.services.commentService.data.CommentThread;
@@ -84,13 +85,8 @@ public class CommentService extends Service {
 	 * @return A Storage with the current context
 	 * @throws StorageException 
 	 */
-	private Storage getStorage() throws StorageException {	
-		try {
-			return new DHTStorage(this.getContext(),this.getAgent());
-		}
-		catch(AgentNotKnownException e) {
-			throw new StorageException("Storage could not be created", e);
-		}
+	private Storage getStorage() throws StorageException {
+		return new DHTStorage(this.getContext());
 	}
 	
 	
@@ -198,8 +194,6 @@ public class CommentService extends Service {
 			notes = "Get comment thread including comments")
 	public HttpResponse getCommentThread(@PathParam("id") String threadId) {
 		try {
-			Storage storage = getStorage();
-			
 			CommentThread thread = _getCommentThread(threadId);
 			List<Comment> comments = thread.getComments();
 			
@@ -210,13 +204,13 @@ public class CommentService extends Service {
 			
 			JSONObject response = new JSONObject();
 			response.put("id",thread.getId());
-			response.put("isAdmin", storage.hasPrivileges(thread.getPermissions().owner) );
-			response.put("isWriter", storage.hasPrivileges(thread.getPermissions().owner) || storage.hasPrivileges(thread.getPermissions().writer) );
+			response.put("isAdmin", getContext().hasAccess(thread.getPermissions().owner) );
+			response.put("isWriter", getContext().hasAccess(thread.getPermissions().owner) || getContext().hasAccess(thread.getPermissions().writer) );
 			response.put("comments", list);
 			
 			return new HttpResponse(response.toJSONString(), HttpURLConnection.HTTP_OK);
 		}
-		catch (PermissionException e) {
+		catch (AgentLockedException | PermissionException e) {
 			return new HttpResponse("Forbidden", HttpURLConnection.HTTP_FORBIDDEN);
 		}
 		catch (StorageException | AgentNotKnownException e) {
@@ -247,7 +241,7 @@ public class CommentService extends Service {
 			notes = "Create a new Comment")
 	public HttpResponse createComment(@PathParam("id") String parentId, @ContentParam String body) {
 		try {
-			Comment comment = new Comment(getActiveAgent().getId(),new Date(),body);
+			Comment comment = new Comment(getContext().getMainAgent().getId(),new Date(),body);
 			_getCommentThread(parentId).addComment(comment);
 			return new HttpResponse(comment.getId(), HttpURLConnection.HTTP_CREATED);
 		}
@@ -282,7 +276,7 @@ public class CommentService extends Service {
 			notes = "Create a new Comment (reply)")
 	public HttpResponse createCommentReply(@PathParam("id") String parentId, @ContentParam String body) {
 		try {
-			Comment comment = new Comment(getActiveAgent().getId(),new Date(),body);
+			Comment comment = new Comment(getContext().getMainAgent().getId(),new Date(),body);
 			_getComment(parentId).addComment(comment);
 			return new HttpResponse(comment.getId(), HttpURLConnection.HTTP_CREATED);
 		}
@@ -467,7 +461,7 @@ public class CommentService extends Service {
 	public HttpResponse addVote(@PathParam("id") String commentId, @ContentParam String body) {
 		try {
 			Comment c = _getComment(commentId);
-			c.vote(getActiveAgent().getId(),body.equals("true"));
+			c.vote(getContext().getMainAgent().getId(),body.equals("true"));
 			
 			JSONObject response = new JSONObject();
 			response.put("rating", c.getRating());

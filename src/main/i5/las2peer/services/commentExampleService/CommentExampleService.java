@@ -71,15 +71,16 @@ public class CommentExampleService extends Service {
 	// RMI methods
 	
 	public String createCommentThread(long owner, long writer, long reader) throws Exception {
+		/*
 		// create a new GroupAgent containing the given owner and the current ServiceAgent
 		Agent ownerAgent = getContext().getAgent(owner);
 		GroupAgent ownerGroup = GroupAgent.createGroupAgent(new Agent[] {getAgent(),ownerAgent});
 		ownerGroup.unlockPrivateKey(getAgent());
 		getContext().getLocalNode().storeAgent(ownerGroup);
-		
+		*/
 		// invoke remote service method
 		Object result = this.invokeServiceMethod("i5.las2peer.services.commentService.CommentService", "createCommentThread",
-				new Serializable[] { ownerGroup.getId(), writer, reader });
+				new Serializable[] { owner, writer, reader });
 			
 		if (result != null) {
 			return (String) result;
