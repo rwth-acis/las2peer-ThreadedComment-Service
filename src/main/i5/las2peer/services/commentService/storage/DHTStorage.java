@@ -1,9 +1,7 @@
 package i5.las2peer.services.commentService.storage;
 
 import java.io.UnsupportedEncodingException;
-//import java.util.Hashtable;
 
-import i5.las2peer.p2p.AgentNotKnownException;
 import i5.las2peer.p2p.ArtifactNotFoundException;
 import i5.las2peer.persistency.DecodingFailedException;
 import i5.las2peer.persistency.EncodingFailedException;
@@ -13,7 +11,6 @@ import i5.las2peer.security.AgentException;
 import i5.las2peer.security.Context;
 import i5.las2peer.security.GroupAgent;
 import i5.las2peer.security.L2pSecurityException;
-import i5.las2peer.security.ServiceAgent;
 import i5.las2peer.tools.CryptoException;
 import i5.las2peer.tools.SerializationException;
 

@@ -294,7 +294,7 @@ public class CommentService extends Service {
 	
 	/**
 	 * Get replys to another comment
-	 * @param threadId Id of the thread
+	 * @param commentId 
 	 * @return 
 	 */
 	@GET

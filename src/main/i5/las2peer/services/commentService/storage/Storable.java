@@ -147,6 +147,7 @@ public abstract class Storable implements Serializable {
 	
 	/**
 	 * Create a StorableSharedPointer from this Storable to another Storable.
+	 * @param <T> 
 	 * @param target The targeted Storable.
 	 * @return A StorableSharedPointer that should be used as non-transient attribute and to be detached when deleted.
 	 * @throws StorageException
@@ -163,6 +164,7 @@ public abstract class Storable implements Serializable {
 	
 	/**
 	 * Create a StorableWeakPointer from thsi Storable to antoher Storable.
+	 * @param <T> 
 	 * @param target The targeted Storable.
 	 * @return A StorableWeakPointer.
 	 * @throws StorageException

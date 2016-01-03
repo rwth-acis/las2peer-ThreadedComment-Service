@@ -49,7 +49,6 @@ public abstract class StorablePointer<T extends Storable> implements Serializabl
 	 * @return The Storable
 	 * @throws StorageException
 	 * @throws PermissionException
-	 * @throws NotFoundException 
 	 */
 	@SuppressWarnings("unchecked")
 	public T get() throws StorageException, PermissionException {

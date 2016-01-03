@@ -1,8 +1,6 @@
 package i5.las2peer.services.commentService.storage;
 
-import i5.las2peer.security.Agent;
 import i5.las2peer.security.Context;
-import i5.las2peer.security.ServiceAgent;
 
 /**
  * Abstract class for storages.
@@ -33,6 +31,7 @@ public abstract class Storage {
 	
 	/**
 	 * Add a Storable to this storage. Once initialized, a Storable cannot be added to another Storage.
+	 * @param <S> 
 	 * 
 	 * @param content The Object to be initilized.
 	 * @return The initilized Object.

@@ -137,8 +137,6 @@ public class Comment extends Storable {
 	 * @param body New comment
 	 * @throws StorageException
 	 * @throws PermissionException
-	 * @throws AgentLockedException 
-	 * @throws AgentNotKnownException 
 	 */
 	public void setBody(String body) throws StorageException, PermissionException {
 		try {
@@ -173,6 +171,7 @@ public class Comment extends Storable {
 
 	/**
 	 * Get total rating
+	 * @return 
 	 * @throws StorageException
 	 * @throws PermissionException
 	 */
@@ -182,7 +181,7 @@ public class Comment extends Storable {
 	
 	/**
 	 * Get vote of a user
-	 * @param agentId the user
+	 * @param angentId 
 	 * @return 1 = upvote, 0 = no vote, -1 = downvote
 	 * @throws PermissionException 
 	 * @throws StorageException 
