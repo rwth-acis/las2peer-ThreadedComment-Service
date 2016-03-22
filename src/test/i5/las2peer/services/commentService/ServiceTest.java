@@ -2,6 +2,7 @@ package i5.las2peer.services.commentService;
 
 import static org.junit.Assert.*;
 import i5.las2peer.p2p.LocalNode;
+import i5.las2peer.p2p.ServiceNameVersion;
 import i5.las2peer.security.ServiceAgent;
 import i5.las2peer.security.UserAgent;
 import i5.las2peer.services.commentExampleService.CommentExampleService;
@@ -40,10 +41,8 @@ public class ServiceTest {
 	private static final String passEve  = "evespass";
 	private static final String passAbel = "abelspass";
 	
-	
-
-	private static final String testCommentService = CommentService.class.getCanonicalName();
-	private static final String testCommentExampleService = CommentExampleService.class.getCanonicalName();
+	private static final ServiceNameVersion testCommentService = new ServiceNameVersion(CommentService.class.getCanonicalName(),"1.0");
+	private static final ServiceNameVersion testCommentExampleService = new ServiceNameVersion(CommentExampleService.class.getCanonicalName(),"1.0");
 
 	private static final String mainPath = "comments/";
 	private static final String mainPathExample = "commentexample/";
@@ -73,9 +72,15 @@ public class ServiceTest {
 
 		// start node
 		node = LocalNode.newNode();
-		node.storeAgent(MockAgentFactory.getAdam());
-		node.storeAgent(MockAgentFactory.getEve());
-		node.storeAgent(MockAgentFactory.getAbel());
+		agentAdam = MockAgentFactory.getAdam();
+		agentAdam.unlockPrivateKey(passAdam);
+		agentEve = MockAgentFactory.getEve();
+		agentEve.unlockPrivateKey(passEve);
+		agentAbel = MockAgentFactory.getAbel();
+		agentAbel.unlockPrivateKey(passAbel);
+		node.storeAgent(agentAdam);
+		node.storeAgent(agentEve);
+		node.storeAgent(agentAbel);
 		node.launch();
 		
 		ServiceAgent testService = ServiceAgent.createServiceAgent(testCommentService, "a pass");
