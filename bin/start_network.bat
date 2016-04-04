@@ -7,5 +7,5 @@ cd ..
 set BASE=%CD%
 set CLASSPATH="%BASE%/lib/*;"
 
-java -cp %CLASSPATH% i5.las2peer.tools.L2pNodeLauncher -w -p 9011 uploadStartupDirectory('etc/startup') startService('i5.las2peer.services.commentService.CommentService','someNewPass') startWebConnector interactive
+java -cp %CLASSPATH% i5.las2peer.tools.L2pNodeLauncher -w -p 9011 uploadStartupDirectory('etc/startup') startService('i5.las2peer.services.commentService.CommentService@0.1','someNewPass') startWebConnector interactive
 pause

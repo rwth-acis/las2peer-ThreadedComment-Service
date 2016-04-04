@@ -159,22 +159,6 @@
     	                <attribute name="Library-SymbolicName" value="${service2.name}" />
     	            </manifest>
     	</jar>
-        
-    	<!-- Workaround -->
-    	<jar jarfile="${lib}/${service.name}-${service.version}.jar">
-    		<fileset dir="${tmp.classes}" includes="${service.path}/**" />
-            <manifest>
-                <attribute name="Library-Version" value="${service.version}" />
-                <attribute name="Library-SymbolicName" value="${service.name}" />
-            </manifest>
-        </jar>
-    	<jar jarfile="${lib}/${service2.name}-${service2.version}.jar">
-    	    		<fileset dir="${tmp.classes}" includes="${service2.path}/**" />
-    	            <manifest>
-    	                <attribute name="Library-Version" value="${service2.version}" />
-    	                <attribute name="Library-SymbolicName" value="${service2.name}" />
-    	            </manifest>
-    	</jar>
     </target>
 	
 	
@@ -259,8 +243,8 @@
 	        <arg value='-p'/>
 	        <arg value='9011'/>
 	        <arg value='uploadStartupDirectory("etc/startup")'/>
-	        <arg value='startService("i5.las2peer.services.commentService.CommentService","someNewPass")'/>
-	    	<arg value='startService("i5.las2peer.services.commentExampleService.CommentExampleService","someNewPass")'/>
+	        <arg value='startService("i5.las2peer.services.commentService.CommentService@0.1","someNewPass")'/>
+	    	<arg value='startService("i5.las2peer.services.commentExampleService.CommentExampleService@0.1","someNewPass")'/>
 	        <arg value='startWebConnector'/>
 	    </java>
 	</target>
@@ -305,8 +289,6 @@ agent-user-${las2peer_user3.name}.xml;${las2peer_user3.password}
 	<target name="clean_before_build">
         <delete dir="${export}"/>
 		<delete file="${service}/${service.name}-${service.version}.jar"/>
-		<!-- Workaround -->
-		<delete file="${lib}/${service.name}-${service.version}.jar"/>
 	</target>
 	
     <target name="clean_after_build">
