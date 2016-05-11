@@ -60,18 +60,18 @@ import net.minidev.json.JSONObject;
 @Api
 @SwaggerDefinition(
 		info = @Info(
-				title = "LAS2peer Comment Service",
+				title = "las2peer Comment Service",
 				version = "0.1",
-				description = "A LAS2peer Comment Service intended to be integrated with other services.",
-				termsOfService = "http://your-terms-of-service-url.com",
+				description = "A las2peer Comment Service intended to be integrated with other services.",
+				termsOfService = "",
 				contact = @Contact(
 						name = "Jasper Nalbach",
-						url = "provider.com",
+						url = "las2peer.org",
 						email = "nalbach@dbis.rwth-aachen.de"
 				),
 				license = @License(
-						name = "your software license name",
-						url = "http://your-software-license-url.com"
+						name = "MIT",
+						url = ""
 				)
 		))
 public class CommentService extends Service {
@@ -137,8 +137,6 @@ public class CommentService extends Service {
 	
 	/**
 	 * Create a new comment thread.
-	 * At the moment, the MainAgent of the Context will be the ServiceAgent of the calling Service.
-	 * Because of that the ServiceAgent must be also an owner!
 	 * 
 	 * @param owner Id of the owning agent. This agent is able to administer comments.
 	 * @param writer Id of the agent who is able to post new comments and up/downvote them.

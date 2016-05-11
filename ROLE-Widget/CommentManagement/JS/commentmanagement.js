@@ -24,7 +24,7 @@ if (typeof gadgets !== "undefined" && gadgets !== null) {
 var login = new api.Login(api.LoginTypes.HTTP_BASIC);
 login.setUserAndPassword("alice", "pwalice"); // TODO get login from somewhere
 
-var requestSender = new api.RequestSender("http://localhost:8080/commentexample", login);
+var requestSender = new api.RequestSender("http://localhost:8080/commentmanagement", login);
 
 
 $(document).ready(function () {
@@ -63,9 +63,9 @@ var showThreads = function () {
 		html += '</ul>';
 
     html+='<div class="add"><form onsubmit="submitAddForm(this);return false;">'
-    +'Owner: <input type="text" name="owner" value="1741926561073830633" /><br />'
-    +'Writer: <input type="text" name="writer" value="-2932758749278370327" /><br />'
-    +'Reader: <input type="text" name="reader" value="1424191584300014900" /><br />'
+    +'Owner: <input type="text" name="owner" value="alice" /><br />'
+    +'Writer: <input type="text" name="writer" value="bobby" /><br />'
+    +'Reader: <input type="text" name="reader" value="joey,anonymous" /><br />'
     +'<input type="submit" value="Create Thread" /></form></div>';
 
 
@@ -75,9 +75,9 @@ var showThreads = function () {
 };
 
 var addThread = function (owner,writer,reader) {
-	var request = new api.Request("post", "threads", "{owner:"+owner+", writer:"+writer+", reader:"+reader+"}", function (data) {
+	var request = new api.Request("post", "threads", "{owner:\""+owner+"\", writer:\""+writer+"\", reader:\""+reader+"\"}", function (data) {
 		document.getElementById("threads").innerHTML+=renderThread(data);
-		
+
 		if (widget)
 			sendIntent(data);
 	});
@@ -87,7 +87,7 @@ var addThread = function (owner,writer,reader) {
 var deleteThread = function (threadId) {
 	var request = new api.Request("delete", "threads/"+threadId, "", function (data) {
 		document.getElementById('thread-'+threadId).parentElement.removeChild(document.getElementById('thread-'+threadId));
-		
+
 		if (widget)
 			sendIntent("");
 	});

@@ -5,7 +5,7 @@ import i5.las2peer.p2p.LocalNode;
 import i5.las2peer.p2p.ServiceNameVersion;
 import i5.las2peer.security.ServiceAgent;
 import i5.las2peer.security.UserAgent;
-import i5.las2peer.services.commentExampleService.CommentExampleService;
+import i5.las2peer.services.commentManagementService.CommentManagementService;
 import i5.las2peer.services.commentService.CommentService;
 import i5.las2peer.testing.MockAgentFactory;
 import i5.las2peer.webConnector.WebConnector;
@@ -42,10 +42,10 @@ public class ServiceTest {
 	private static final String passAbel = "abelspass";
 	
 	private static final ServiceNameVersion testCommentService = new ServiceNameVersion(CommentService.class.getCanonicalName(),"1.0");
-	private static final ServiceNameVersion testCommentExampleService = new ServiceNameVersion(CommentExampleService.class.getCanonicalName(),"1.0");
+	private static final ServiceNameVersion testCommentManagementService = new ServiceNameVersion(CommentManagementService.class.getCanonicalName(),"1.0");
 
 	private static final String mainPath = "comments/";
-	private static final String mainPathExample = "commentexample/";
+	private static final String mainPathManager = "commentmanagement/";
 	
 	private static int getUnusedPort() {
 		int port = HTTP_PORT;
@@ -88,7 +88,7 @@ public class ServiceTest {
 
 		node.registerReceiver(testService);
 		
-		ServiceAgent testServiceExample = ServiceAgent.createServiceAgent(testCommentExampleService, "a pass");
+		ServiceAgent testServiceExample = ServiceAgent.createServiceAgent(testCommentManagementService, "a pass");
 		testServiceExample.unlockPrivateKey("a pass");
 
 		node.registerReceiver(testServiceExample);
@@ -169,7 +169,7 @@ public class ServiceTest {
 			cAnonymous.setAddressPort(HTTP_ADDRESS, HTTP_PORT);
 			
 			// create comment thread
-			ClientResponse result = cAdam.sendRequest("POST", mainPathExample + "threads", "{owner:"+agentAdam.getId()+",writer:"+agentEve.getId()+",reader:"+agentAbel.getId()+"}");
+			ClientResponse result = cAdam.sendRequest("POST", mainPathManager + "threads", "{owner:"+agentAdam.getLoginName()+",writer:"+agentEve.getLoginName()+",reader:"+agentAbel.getLoginName()+"}");
 			assertEquals(201, result.getHttpCode());
 			String threadId = result.getResponse().trim();
 			
@@ -279,7 +279,7 @@ public class ServiceTest {
 			System.out.println("DeleteComment: "+ result15.getResponse().trim());
 			
 			// delete comment thread
-			ClientResponse result17 = cAdam.sendRequest("DELETE", mainPathExample + "threads/"+threadId, "");
+			ClientResponse result17 = cAdam.sendRequest("DELETE", mainPathManager + "threads/"+threadId, "");
 			assertEquals(200, result17.getHttpCode());
 			
 			System.out.println("DeleteThread: " + result17.getResponse().trim());

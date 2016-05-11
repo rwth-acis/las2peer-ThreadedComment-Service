@@ -1,4 +1,4 @@
-package i5.las2peer.services.commentExampleService;
+package i5.las2peer.services.commentManagementService;
 
 import java.io.Serializable;
 import java.util.ArrayList;

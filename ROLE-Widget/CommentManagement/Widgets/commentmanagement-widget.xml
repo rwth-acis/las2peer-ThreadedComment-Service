@@ -28,7 +28,7 @@
   <script src="http://localhost:8081/CommentExample/JS/ServiceAPI/b64.js"></script>
   <script src="http://localhost:8081/CommentExample/JS/ServiceAPI/serviceAPI.js"></script>
 
-  <script src="http://localhost:8081/CommentExample/JS/commentexample.js"></script>
+  <script src="http://localhost:8081/CommentExample/JS/commentmanagement.js"></script>
 </head>
 <body>
   <div id="main">

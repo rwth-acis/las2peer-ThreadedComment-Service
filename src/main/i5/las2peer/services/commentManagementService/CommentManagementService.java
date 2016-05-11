@@ -1,4 +1,4 @@
-package i5.las2peer.services.commentExampleService;
+package i5.las2peer.services.commentManagementService;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -13,6 +13,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
 import i5.las2peer.api.Service;
+import i5.las2peer.p2p.AgentAlreadyRegisteredException;
+import i5.las2peer.p2p.AgentNotKnownException;
 import i5.las2peer.persistency.Envelope;
 import i5.las2peer.restMapper.HttpResponse;
 import i5.las2peer.restMapper.MediaType;
@@ -21,6 +23,12 @@ import i5.las2peer.restMapper.annotations.ContentParam;
 import i5.las2peer.restMapper.annotations.Version;
 import i5.las2peer.restMapper.tools.ValidationResult;
 import i5.las2peer.restMapper.tools.XMLCheck;
+import i5.las2peer.security.Agent;
+import i5.las2peer.security.AgentException;
+import i5.las2peer.security.GroupAgent;
+import i5.las2peer.security.L2pSecurityException;
+import i5.las2peer.tools.CryptoException;
+import i5.las2peer.tools.SerializationException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -37,45 +45,38 @@ import net.minidev.json.parser.JSONParser;
  * 
  * Example Service to show how to use the CommentService
  */
-@Path("/commentexample")
+@Path("/commentmanagement")
 @Version("0.1") // this annotation is used by the XML mapper
 @Api
 @SwaggerDefinition(
 		info = @Info(
-				title = "LAS2peer Comment Service Example",
+				title = "las2peer Comment Management Service",
 				version = "0.1",
-				description = "A simple example using the Comment Service for demonstration purposes.",
-				termsOfService = "http://your-terms-of-service-url.com",
+				description = "Create and manage comment threads to integrate them into websites.",
+				termsOfService = "",
 				contact = @Contact(
 						name = "Jasper Nalbach",
-						url = "provider.com",
+						url = "las2peer.org",
 						email = "nalbach@dbis.rwth-aachen.de"
 				),
 				license = @License(
-						name = "your software license name",
-						url = "http://your-software-license-url.com"
+						name = "MIT",
+						url = ""
 				)
 		))
 
 
-public class CommentExampleService extends Service {
+public class CommentManagementService extends Service {
 
 	private static String containerIdentifier = "COMMENTEXAMPLESERVICE";
 
-	public CommentExampleService() {
+	public CommentManagementService() {
 		setFieldValues();
 	}
 	
 	// RMI methods
 	
 	public String createCommentThread(long owner, long writer, long reader) throws Exception {
-		/*
-		// create a new GroupAgent containing the given owner and the current ServiceAgent
-		Agent ownerAgent = getContext().getAgent(owner);
-		GroupAgent ownerGroup = GroupAgent.createGroupAgent(new Agent[] {getAgent(),ownerAgent});
-		ownerGroup.unlockPrivateKey(getAgent());
-		getContext().getLocalNode().storeAgent(ownerGroup);
-		*/
 		// invoke remote service method
 		Object result = this.invokeServiceMethod("i5.las2peer.services.commentService.CommentService", "createCommentThread",
 				new Serializable[] { owner, writer, reader });
@@ -130,7 +131,34 @@ public class CommentExampleService extends Service {
 	}
 	
 	
+	// Group Creation helper
+	// TODO : group containing all users is not possible at the moment
+	// TODO : this should be done using a seperate group management service
+	private long createGroup(String agentString) throws L2pSecurityException, CryptoException, SerializationException, AgentAlreadyRegisteredException, AgentException {
+		String[] agentNameList = agentString.split(",");
+		
+		Agent[] agentList = new Agent[agentNameList.length + 1];
+		agentList[0] = getContext().getMainAgent();
+		
+		int i = 1;
+		for (String agentName : agentNameList) {
+			long agentId = getContext().getLocalNode().getAgentIdForLogin(agentName.trim());
+			Agent agent = getContext().getAgent(agentId);
+			agentList[i] = agent;
+			i++;
+		}
+		
+		GroupAgent group = GroupAgent.createGroupAgent(agentList);
+		group.unlockPrivateKey(getContext().getMainAgent());
+		getContext().getLocalNode().storeAgent(group);
+		
+		return group.getId();
+	}
+	
+	
 	// Service methods
+	
+	// TODO : per user thread list
 
 	@GET
 	@Path("/threads")
@@ -164,7 +192,9 @@ public class CommentExampleService extends Service {
 			JSONParser parser = new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE);
 			JSONObject params = (JSONObject)parser.parse(content);
 			
-			String newThread = createCommentThread((long)params.get("owner"),(long)params.get("writer"),(long)params.get("reader"));
+			String newThread = createCommentThread(createGroup((String)params.get("owner")),
+					createGroup((String)params.get("writer")),
+					createGroup((String)params.get("reader")));
 			
 			Container c = fetchContainer();
 			c.getThreads().add(newThread);
