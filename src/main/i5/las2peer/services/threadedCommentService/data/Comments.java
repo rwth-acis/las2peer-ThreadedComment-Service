@@ -1,4 +1,4 @@
-package i5.las2peer.services.commentService.data;
+package i5.las2peer.services.threadedCommentService.data;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,10 +6,10 @@ import java.util.List;
 import i5.las2peer.p2p.AgentNotKnownException;
 import i5.las2peer.security.Agent;
 import i5.las2peer.security.GroupAgent;
-import i5.las2peer.services.commentService.storage.PermissionException;
-import i5.las2peer.services.commentService.storage.Storable;
-import i5.las2peer.services.commentService.storage.StorableSharedPointer;
-import i5.las2peer.services.commentService.storage.StorageException;
+import i5.las2peer.services.threadedCommentService.storage.PermissionException;
+import i5.las2peer.services.threadedCommentService.storage.Storable;
+import i5.las2peer.services.threadedCommentService.storage.StorableSharedPointer;
+import i5.las2peer.services.threadedCommentService.storage.StorageException;
 
 /**
  * Comment container.

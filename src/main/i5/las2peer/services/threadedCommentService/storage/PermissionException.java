@@ -1,4 +1,4 @@
-package i5.las2peer.services.commentService.storage;
+package i5.las2peer.services.threadedCommentService.storage;
 
 /**
  * To be thrown whenever the current user does not have permission do get/edit/delete a Storable.

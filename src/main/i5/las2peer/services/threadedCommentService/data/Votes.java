@@ -1,11 +1,11 @@
-package i5.las2peer.services.commentService.data;
+package i5.las2peer.services.threadedCommentService.data;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import i5.las2peer.services.commentService.storage.PermissionException;
-import i5.las2peer.services.commentService.storage.Storable;
-import i5.las2peer.services.commentService.storage.StorageException;
+import i5.las2peer.services.threadedCommentService.storage.PermissionException;
+import i5.las2peer.services.threadedCommentService.storage.Storable;
+import i5.las2peer.services.threadedCommentService.storage.StorageException;
 
 /**
  * Simple container for votes. Uses simple lists to manage votes.

@@ -1,4 +1,4 @@
-package i5.las2peer.services.commentService;
+package i5.las2peer.services.threadedCommentService;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -26,14 +26,14 @@ import i5.las2peer.restMapper.tools.XMLCheck;
 import i5.las2peer.security.Agent;
 import i5.las2peer.security.AgentLockedException;
 import i5.las2peer.security.UserAgent;
-import i5.las2peer.services.commentService.data.Comment;
-import i5.las2peer.services.commentService.data.CommentThread;
-import i5.las2peer.services.commentService.data.Permissions;
-import i5.las2peer.services.commentService.storage.DHTStorage;
-import i5.las2peer.services.commentService.storage.NotFoundException;
-import i5.las2peer.services.commentService.storage.PermissionException;
-import i5.las2peer.services.commentService.storage.Storage;
-import i5.las2peer.services.commentService.storage.StorageException;
+import i5.las2peer.services.threadedCommentService.data.Comment;
+import i5.las2peer.services.threadedCommentService.data.CommentThread;
+import i5.las2peer.services.threadedCommentService.data.Permissions;
+import i5.las2peer.services.threadedCommentService.storage.DHTStorage;
+import i5.las2peer.services.threadedCommentService.storage.NotFoundException;
+import i5.las2peer.services.threadedCommentService.storage.PermissionException;
+import i5.las2peer.services.threadedCommentService.storage.Storage;
+import i5.las2peer.services.threadedCommentService.storage.StorageException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -47,9 +47,9 @@ import net.minidev.json.JSONObject;
 
 
 /**
- * LAS2peer Comment Service
+ * las2peer Threaded Comment Service
  * 
- * A comment service. Other services can create a new thread and set up permissions. Users
+ * A threaded comment service. Other services can create a new thread and set up permissions. Users
  * can post comments to this thread, reply to other comments and up/dwonvote comments.
  * 
  * @author Jasper Nalbach
@@ -60,9 +60,9 @@ import net.minidev.json.JSONObject;
 @Api
 @SwaggerDefinition(
 		info = @Info(
-				title = "las2peer Comment Service",
+				title = "las2peer Threaded Comment Service",
 				version = "0.1",
-				description = "A las2peer Comment Service intended to be integrated with other services.",
+				description = "A las2peer Service providing threaded comment functionality intended to be integrated with other services.",
 				termsOfService = "",
 				contact = @Contact(
 						name = "Jasper Nalbach",
@@ -74,10 +74,9 @@ import net.minidev.json.JSONObject;
 						url = ""
 				)
 		))
-public class CommentService extends Service {
+public class ThreadedCommentService extends Service {
 	
-	public CommentService() {
-		setFieldValues();
+	public ThreadedCommentService() {
 	}
 
 	/**
@@ -145,7 +144,7 @@ public class CommentService extends Service {
 	 */
 	public String createCommentThread(long owner, long writer, long reader) {
 		try {
-			CommentThread thread = getStorage().init(new CommentThread(new Permissions(getAgent().getId(),owner,writer,reader)));
+			CommentThread thread = getStorage().init(new CommentThread(new Permissions(owner,writer,reader)));
 			return thread.getId();
 		} catch (Exception e) {
 			//e.printStackTrace();

@@ -14,7 +14,6 @@ import javax.ws.rs.Produces;
 
 import i5.las2peer.api.Service;
 import i5.las2peer.p2p.AgentAlreadyRegisteredException;
-import i5.las2peer.p2p.AgentNotKnownException;
 import i5.las2peer.persistency.Envelope;
 import i5.las2peer.restMapper.HttpResponse;
 import i5.las2peer.restMapper.MediaType;
@@ -78,7 +77,7 @@ public class CommentManagementService extends Service {
 	
 	public String createCommentThread(long owner, long writer, long reader) throws Exception {
 		// invoke remote service method
-		Object result = this.invokeServiceMethod("i5.las2peer.services.commentService.CommentService", "createCommentThread",
+		Object result = this.invokeServiceMethod("i5.las2peer.services.threadedCommentService.ThreadedCommentService@0.1", "createCommentThread",
 				new Serializable[] { owner, writer, reader });
 			
 		if (result != null) {
@@ -90,7 +89,7 @@ public class CommentManagementService extends Service {
 	
 	public boolean deleteCommentThread(String id) throws Exception {
 		// invoke remote service method
-		Object result = this.invokeServiceMethod("i5.las2peer.services.commentService.CommentService", "deleteCommentThread", new Serializable[] { id });
+		Object result = this.invokeServiceMethod("i5.las2peer.services.threadedCommentService.ThreadedCommentService@0.1", "deleteCommentThread", new Serializable[] { id });
 			
 		if (result != null) {
 			return (Boolean) result;

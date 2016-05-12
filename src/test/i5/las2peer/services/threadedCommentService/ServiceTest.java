@@ -1,4 +1,4 @@
-package i5.las2peer.services.commentService;
+package i5.las2peer.services.threadedCommentService;
 
 import static org.junit.Assert.*;
 import i5.las2peer.p2p.LocalNode;
@@ -6,7 +6,7 @@ import i5.las2peer.p2p.ServiceNameVersion;
 import i5.las2peer.security.ServiceAgent;
 import i5.las2peer.security.UserAgent;
 import i5.las2peer.services.commentManagementService.CommentManagementService;
-import i5.las2peer.services.commentService.CommentService;
+import i5.las2peer.services.threadedCommentService.ThreadedCommentService;
 import i5.las2peer.testing.MockAgentFactory;
 import i5.las2peer.webConnector.WebConnector;
 import i5.las2peer.webConnector.client.ClientResponse;
@@ -22,7 +22,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Example Test Class demonstrating a basic JUnit test structure.
+ * Tests both services
  *
  */
 public class ServiceTest {
@@ -41,8 +41,8 @@ public class ServiceTest {
 	private static final String passEve  = "evespass";
 	private static final String passAbel = "abelspass";
 	
-	private static final ServiceNameVersion testCommentService = new ServiceNameVersion(CommentService.class.getCanonicalName(),"1.0");
-	private static final ServiceNameVersion testCommentManagementService = new ServiceNameVersion(CommentManagementService.class.getCanonicalName(),"1.0");
+	private static final ServiceNameVersion testCommentService = new ServiceNameVersion(ThreadedCommentService.class.getCanonicalName(),"0.1");
+	private static final ServiceNameVersion testCommentManagementService = new ServiceNameVersion(CommentManagementService.class.getCanonicalName(),"0.1");
 
 	private static final String mainPath = "comments/";
 	private static final String mainPathManager = "commentmanagement/";
@@ -299,7 +299,7 @@ public class ServiceTest {
 	@Test
 	public void testDebugMapping()
 	{
-		CommentService cl = new CommentService();
+		ThreadedCommentService cl = new ThreadedCommentService();
 		assertTrue(cl.debugMapping());
 	}
 

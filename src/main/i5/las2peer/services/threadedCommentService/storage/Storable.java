@@ -1,4 +1,4 @@
-package i5.las2peer.services.commentService.storage;
+package i5.las2peer.services.threadedCommentService.storage;
 
 import java.io.Serializable;
 import java.util.ArrayList;
