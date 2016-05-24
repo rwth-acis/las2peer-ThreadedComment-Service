@@ -410,7 +410,7 @@ public class ThreadedCommentService extends Service {
 	 */
 	@DELETE
 	@Path("/comment/{id}")
-	@Produces(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_OK, message = "Deleted resource"),
 			@ApiResponse(code = HttpURLConnection.HTTP_FORBIDDEN, message = "Forbidden"),
@@ -446,7 +446,7 @@ public class ThreadedCommentService extends Service {
 	 */
 	@POST
 	@Path("/comment/{id}/votes")
-	@Produces(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
 	@ApiResponses(value = {
 			@ApiResponse(code = HttpURLConnection.HTTP_CREATED, message = "Vote submitted"),
 			@ApiResponse(code = HttpURLConnection.HTTP_FORBIDDEN, message = "Forbidden"),
