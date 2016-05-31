@@ -10,8 +10,9 @@ The service makes heavy use of the distributed storage of las2peer. All user con
 in order to be independent from specific ServiceAgents.
 This means that the service can be deployed everywhere on the network while each instance uses the same data.
 
-There is also a CommentExampleService to show how to call the CommentService's RMI methods.
-ROLE widgets are provided for both services.
+There is also a CommentManagementService to show how to call the CommentService's RMI methods.
+
+ROLE widgets are provided for both services. Also, there exists a [Polymer element](https://github.com/rwth-acis/comment-thread-widget).
 
 Features
 --------

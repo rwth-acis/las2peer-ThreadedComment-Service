@@ -1,33 +1,32 @@
 package i5.las2peer.services.threadedCommentService.data;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import i5.las2peer.services.threadedCommentService.storage.PermissionException;
 import i5.las2peer.services.threadedCommentService.storage.Storable;
 import i5.las2peer.services.threadedCommentService.storage.StorageException;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Simple container for votes. Uses simple lists to manage votes.
  * 
- * Lists are used instead of new Storables for each vote because this would not
- * add additional security as the Votes object has to be owned by the service
- * and removing and adding votes would be possible, too.
+ * Lists are used instead of new Storables for each vote because this would not add additional security as the Votes
+ * object has to be owned by the service and removing and adding votes would be possible, too.
  * 
  * @author Jasper Nalbach
  *
  */
 public class Votes extends Storable {
-	
+
 	// this should become an own service
-	
+
 	private static final long serialVersionUID = 1L;
-	
+
 	private Permissions permissions;
-	
+
 	private Set<Long> upvotes;
 	private Set<Long> downvotes;
-	
+
 	public Votes(Permissions permissions) {
 		this.permissions = permissions;
 		this.upvotes = new HashSet<>();
@@ -46,20 +45,31 @@ public class Votes extends Storable {
 	}
 
 	@Override
-	protected boolean cleanup() throws StorageException, PermissionException {		
+	protected boolean cleanup() throws StorageException, PermissionException {
 		return true;
 	}
-	
+
 	/**
-	 * Get total rating
-	 * @return total rating
+	 * Get number of upvotes
+	 * 
+	 * @return upvotes
 	 */
-	int getRating() {
-		return upvotes.size() - downvotes.size();
+	int getUpvotes() {
+		return upvotes.size();
 	}
-	
+
+	/**
+	 * Get number of downvotes
+	 * 
+	 * @return downvotes
+	 */
+	int getDownvotes() {
+		return downvotes.size();
+	}
+
 	/**
 	 * Submit a vote
+	 * 
 	 * @param agentId the user
 	 * @param upvote true for upvote, false for downvote
 	 * @throws StorageException
@@ -68,24 +78,25 @@ public class Votes extends Storable {
 	void vote(long agentId, boolean upvote) throws StorageException, PermissionException {
 		upvotes.remove(agentId);
 		downvotes.remove(agentId);
-		
+
 		if (upvote)
 			upvotes.add(agentId);
 		else
 			downvotes.add(agentId);
-		
+
 		save();
 	}
-	
+
 	/**
 	 * get vote of a user
+	 * 
 	 * @param agentId the user
 	 * @return 1 = upvote, 0 = no vote, -1 = downvote
 	 */
 	short getVote(long agentId) {
 		if (upvotes.contains(agentId))
 			return 1;
-		else if(downvotes.contains(agentId))
+		else if (downvotes.contains(agentId))
 			return -1;
 		else
 			return 0;
