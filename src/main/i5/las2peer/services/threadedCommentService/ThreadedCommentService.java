@@ -1,14 +1,10 @@
 package i5.las2peer.services.threadedCommentService;
 
-import i5.las2peer.api.Service;
 import i5.las2peer.p2p.AgentNotKnownException;
 import i5.las2peer.restMapper.HttpResponse;
 import i5.las2peer.restMapper.MediaType;
-import i5.las2peer.restMapper.RESTMapper;
+import i5.las2peer.restMapper.RESTService;
 import i5.las2peer.restMapper.annotations.ContentParam;
-import i5.las2peer.restMapper.annotations.Version;
-import i5.las2peer.restMapper.tools.ValidationResult;
-import i5.las2peer.restMapper.tools.XMLCheck;
 import i5.las2peer.security.Agent;
 import i5.las2peer.security.AgentLockedException;
 import i5.las2peer.security.UserAgent;
@@ -29,7 +25,6 @@ import io.swagger.annotations.Info;
 import io.swagger.annotations.License;
 import io.swagger.annotations.SwaggerDefinition;
 
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -56,7 +51,6 @@ import net.minidev.json.JSONObject;
  *
  */
 @Path("/comments")
-@Version("0.1")
 @Api
 @SwaggerDefinition(
 		info = @Info(
@@ -71,7 +65,7 @@ import net.minidev.json.JSONObject;
 				license = @License(
 						name = "MIT",
 						url = "")))
-public class ThreadedCommentService extends Service {
+public class ThreadedCommentService extends RESTService {
 
 	public ThreadedCommentService() {
 	}
@@ -501,53 +495,6 @@ public class ThreadedCommentService extends Service {
 		} catch (NotFoundException e) {
 			return new HttpResponse("Not Found", HttpURLConnection.HTTP_NOT_FOUND);
 		}
-	}
-
-	// //////////////////////////////////////////////////////////////////////////////////////
-	// Methods required by the LAS2peer framework.
-	// //////////////////////////////////////////////////////////////////////////////////////
-
-	/**
-	 * Method for debugging purposes. Here the concept of restMapping validation is shown. It is important to check, if
-	 * all annotations are correct and consistent. Otherwise the service will not be accessible by the WebConnector.
-	 * Best to do it in the unit tests. To avoid being overlooked/ignored the method is implemented here and not in the
-	 * test section.
-	 * 
-	 * @return true, if mapping correct
-	 */
-	public boolean debugMapping() {
-		String XML_LOCATION = "./restMapping.xml";
-		String xml = getRESTMapping();
-
-		try {
-			RESTMapper.writeFile(XML_LOCATION, xml);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		XMLCheck validator = new XMLCheck();
-		ValidationResult result = validator.validate(xml);
-
-		if (result.isValid()) {
-			return true;
-		}
-		return false;
-	}
-
-	/**
-	 * This method is needed for every RESTful application in LAS2peer. There is no need to change!
-	 * 
-	 * @return the mapping
-	 */
-	public String getRESTMapping() {
-		String result = "";
-		try {
-			result = RESTMapper.getMethodsAsXML(this.getClass());
-		} catch (Exception e) {
-
-			e.printStackTrace();
-		}
-		return result;
 	}
 
 }
