@@ -28,9 +28,6 @@
 	<classpathentry kind="lib" path="lib/jsr311-api-1.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/junit-4.11.jar"/>
 	<classpathentry kind="lib" path="lib/lang-tag-1.4.jar"/>
-	<classpathentry kind="lib" path="lib/las2peer-0.5-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="lib/las2peer-rest-mapper-0.5-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="lib/las2peer-web-connector-0.5-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/mail-1.4.7.jar"/>
 	<classpathentry kind="lib" path="lib/nimbus-jose-jwt-4.0.jar"/>
 	<classpathentry kind="lib" path="lib/oauth2-oidc-sdk-4.17.jar"/>
@@ -44,5 +41,8 @@
 	<classpathentry kind="lib" path="lib/swagger-models-1.5.4.jar"/>
 	<classpathentry kind="lib" path="lib/validation-api-1.1.0.Final.jar"/>
 	<classpathentry kind="lib" path="lib/xpp3-1.1.4c.jar"/>
+	<classpathentry kind="lib" path="lib/las2peer-0.6-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/las2peer-rest-mapper-0.6-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/las2peer-web-connector-0.6-SNAPSHOT.jar"/>
 	<classpathentry kind="output" path="output"/>
 </classpath>
