@@ -206,6 +206,7 @@ public class ThreadedCommentService extends RESTService {
 
 			return new HttpResponse(response.toJSONString(), HttpURLConnection.HTTP_OK);
 		} catch (AgentLockedException | PermissionException e) {
+			e.printStackTrace();
 			return new HttpResponse("Forbidden", HttpURLConnection.HTTP_FORBIDDEN);
 		} catch (StorageException | AgentNotKnownException e) {
 			e.printStackTrace();
@@ -244,6 +245,7 @@ public class ThreadedCommentService extends RESTService {
 			_getCommentThread(parentId).addComment(comment);
 			return new HttpResponse(comment.getId(), HttpURLConnection.HTTP_CREATED);
 		} catch (PermissionException e) {
+			e.printStackTrace();
 			return new HttpResponse("Forbidden", HttpURLConnection.HTTP_FORBIDDEN);
 		} catch (StorageException e) {
 			e.printStackTrace();

@@ -1,16 +1,16 @@
 package i5.las2peer.services.threadedCommentService.storage;
 
-import i5.las2peer.p2p.ArtifactNotFoundException;
-import i5.las2peer.persistency.DecodingFailedException;
-import i5.las2peer.persistency.EncodingFailedException;
+import i5.las2peer.api.exceptions.ArtifactNotFoundException;
 import i5.las2peer.persistency.Envelope;
 import i5.las2peer.security.Agent;
-import i5.las2peer.security.AgentException;
 import i5.las2peer.security.Context;
 import i5.las2peer.security.GroupAgent;
 import i5.las2peer.security.L2pSecurityException;
 import i5.las2peer.tools.CryptoException;
-import i5.las2peer.tools.SerializationException;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DHTStorage extends Storage {
 
@@ -57,7 +57,49 @@ public class DHTStorage extends Storage {
 		setEnvelopeData(storable, true);
 	}
 
-	private Envelope createNewEnvelope(Storable storable) throws StorageException, PermissionException {
+	private void setEnvelopeData(Storable storable) throws StorageException, PermissionException {
+		setEnvelopeData(storable, false);
+	}
+
+	private void setEnvelopeData(Storable storable, boolean delete) throws StorageException, PermissionException {
+		Serializable content;
+		if (delete) {
+			content = "";
+		} else {
+			content = storable;
+		}
+
+		Envelope env = null;
+		try { // existing
+			env = getContext().fetchEnvelope(getEnvelopeName(storable.getId()));
+		} catch (Exception e) {
+		}
+
+		if (env != null) {
+			createNewVersion(env, storable.getOwner(), content);
+		} else if (!delete) {
+			createNewEnvelope(storable);
+		}
+	}
+
+	private void createNewVersion(Envelope previousVersion, long owner, Serializable content)
+			throws PermissionException, StorageException {
+		try {
+			// get owner agent
+			GroupAgent ownerAgent = getContext().requestGroupAgent(owner);
+
+			// store new version
+			// TODO BUG in las2peer: wrong method is called:
+			Envelope newEnv = getContext().createEnvelope(previousVersion, content);
+			getContext().storeEnvelope(newEnv, ownerAgent);
+		} catch (L2pSecurityException e) {
+			throw new PermissionException(e);
+		} catch (Exception e) {
+			throw new StorageException(e);
+		}
+	}
+
+	private void createNewEnvelope(Storable storable) throws StorageException, PermissionException {
 		try {
 			if (storable.getWriter().size() == 0)
 				throw new StorageException("Storable has no Agent with writing access!");
@@ -72,76 +114,35 @@ public class DHTStorage extends Storage {
 				}
 			}
 
-			GroupAgent group = GroupAgent.createGroupAgent(ownerList);
+			GroupAgent ownerGroup = GroupAgent.createGroupAgent(ownerList);
 
 			// unlock group
 			for (Agent a : ownerList) {
 				try {
-					group.unlockPrivateKey(a);
+					ownerGroup.unlockPrivateKey(a);
 					break;
 				} catch (Exception e) {
 				}
 			}
-			if (group.isLocked())
+			if (ownerGroup.isLocked())
 				throw new PermissionException("At least one writer must be unlocked in this Context!");
 
 			// store group
-			getContext().getLocalNode().storeAgent(group);
+			getContext().getLocalNode().storeAgent(ownerGroup);
 
 			// set owner in Storable
-			storable.setOwner(group.getId());
+			storable.setOwner(ownerGroup.getId());
+
+			// create reader list
+			List<Agent> reader = new ArrayList<>();
+			reader.add(ownerGroup);
+			for (Long a : storable.getReader())
+				reader.add(getContext().getAgent(a));
 
 			// store Storable
-			Envelope envelope = Envelope.createClassIdEnvelope(storable, getEnvelopeName(storable.getId()), group);
-			envelope.open(group);
+			Envelope envelope = getContext().createEnvelope(getEnvelopeName(storable.getId()), storable, reader);
 
-			// add reader
-			for (Long a : storable.getReader())
-				envelope.addReader(getContext().getAgent(a));
-
-			envelope.close();
-
-			return envelope;
-		} catch (L2pSecurityException | CryptoException | SerializationException | AgentException
-				| EncodingFailedException | DecodingFailedException e) {
-			throw new StorageException(e);
-		}
-	}
-
-	private void setEnvelopeData(Storable storable) throws StorageException, PermissionException {
-		setEnvelopeData(storable, false);
-	}
-
-	private void setEnvelopeData(Storable storable, boolean delete) throws StorageException, PermissionException {
-		Envelope env;
-		try {
-			env = fetchEnvelope(storable.getClass(), storable.getId());
-		} catch (StorageException | NotFoundException e) {
-			if (delete)
-				return;
-
-			env = createNewEnvelope(storable);
-		}
-
-		try {
-			// get owner agent
-			GroupAgent ownerAgent = getContext().requestGroupAgent(storable.getOwner());
-
-			// open envelope
-			if (!env.isOpen())
-				env.open(ownerAgent);
-
-			// store
-			env.setOverWriteBlindly(true);
-			if (delete)
-				env.updateContent("");
-			else
-				env.updateContent(storable);
-			env.addSignature(ownerAgent);
-			env.store();
-			env.close();
-		} catch (L2pSecurityException e) {
-			throw new PermissionException(e);
+			getContext().storeEnvelope(envelope, ownerGroup);
 		} catch (Exception e) {
 			throw new StorageException(e);
 		}
@@ -149,34 +150,31 @@ public class DHTStorage extends Storage {
 
 	private Storable getEnvelopeData(Class<? extends Storable> cls, String id) throws StorageException,
 			PermissionException, NotFoundException {
-		Envelope env = fetchEnvelope(cls, id);
+		Envelope env;
+
+		try {
+			env = getContext().fetchEnvelope(getEnvelopeName(id));
+		} catch (ArtifactNotFoundException e) {
+			throw new NotFoundException(e);
+		} catch (Exception e) {
+			throw new StorageException(e);
+		}
+
 		Storable data = null;
 		if (env == null)
 			throw new NotFoundException("Envelope could not be found, nor created!");
 
+		System.out.println(id);
+		System.out.println(env.getReaderKeys().keySet());
+
 		try {
-			env.open();
-			data = env.getContent(cls);
-			env.close();
-		} catch (L2pSecurityException e) {
+			data = (Storable) env.getContent();
+		} catch (CryptoException | L2pSecurityException e) {
 			throw new PermissionException(e);
 		} catch (Exception e) {
 			throw new StorageException(e);
 		}
 
 		return data;
-	}
-
-	private Envelope fetchEnvelope(Class<?> cls, String id) throws StorageException, NotFoundException {
-		Envelope env;
-		try {
-			env = getContext().getStoredObject(cls, getEnvelopeName(id));
-		} catch (ArtifactNotFoundException | i5.las2peer.p2p.StorageException e) {
-			throw new NotFoundException(e);
-		} catch (Exception e) {
-			throw new StorageException(e);
-		}
-
-		return env;
 	}
 }

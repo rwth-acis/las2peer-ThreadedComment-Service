@@ -95,29 +95,23 @@ public class CommentManagementService extends RESTService {
 
 	private Container fetchContainer() {
 		try {
-			Envelope env = getContext().getStoredObject(Container.class, containerIdentifier);
-			env.open(getAgent());
-			Container retrieved = env.getContent(Container.class);
-			env.close();
-			return retrieved;
+			Envelope env = getContext().fetchEnvelope(containerIdentifier);
+			return (Container) env.getContent();
 		} catch (Exception e) {
 			System.err.println("Can't fetch from network storage!");
+			return new Container();
 		}
-		return new Container();
 	}
 
 	private void storeContainer(Container container) throws Exception {
 		Envelope env = null;
 		try {
-			env = getContext().getStoredObject(Container.class, containerIdentifier);
+			Envelope previous = getContext().fetchEnvelope(containerIdentifier);
+			env = getContext().createEnvelope(previous, container);
 		} catch (Exception e) {
-			env = Envelope.createClassIdEnvelope(container, containerIdentifier, getAgent());
+			env = getContext().createEnvelope(containerIdentifier, container);
 		}
-		env.open(getAgent());
-		env.updateContent(container);
-		env.addSignature(getAgent());
-		env.store();
-		env.close();
+		getContext().storeEnvelope(env);
 	}
 
 	// Group Creation helper
