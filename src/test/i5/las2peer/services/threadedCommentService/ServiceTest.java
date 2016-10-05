@@ -165,6 +165,12 @@ public class ServiceTest {
 
 			System.out.println("CreateThread: " + threadId);
 
+			// get comment thread
+			ClientResponse result1 = cAdam.sendRequest("GET", mainPath + "threads/" + threadId, "");
+			assertEquals(200, result1.getHttpCode());
+
+			System.out.println("GetCommentThread: " + result1.getResponse().trim());
+
 			// add comment
 			ClientResponse result2 = cEve.sendRequest("POST", mainPath + "threads/" + threadId, "comment1_content");
 			assertEquals(201, result2.getHttpCode());

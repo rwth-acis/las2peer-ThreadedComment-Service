@@ -1,6 +1,6 @@
 package i5.las2peer.services.threadedCommentService.storage;
 
-import i5.las2peer.security.Context;
+import i5.las2peer.api.Context;
 
 /**
  * Abstract class for storages.
@@ -11,15 +11,16 @@ import i5.las2peer.security.Context;
  */
 public abstract class Storage {
 	private Context context;
-	
+
 	/**
 	 * Create a new Storage object
+	 * 
 	 * @param context Usually the context of the service
 	 */
 	public Storage(Context context) {
 		this.context = context;
 	}
-	
+
 	/**
 	 * Get the context to work with.
 	 * 
@@ -28,10 +29,11 @@ public abstract class Storage {
 	public Context getContext() {
 		return context;
 	}
-	
+
 	/**
 	 * Add a Storable to this storage. Once initialized, a Storable cannot be added to another Storage.
-	 * @param <S> 
+	 * 
+	 * @param <S>
 	 * 
 	 * @param content The Object to be initilized.
 	 * @return The initilized Object.
@@ -39,7 +41,7 @@ public abstract class Storage {
 	 * @throws PermissionException
 	 */
 	public abstract <S extends Storable> S init(S content) throws StorageException, PermissionException;
-	
+
 	/**
 	 * Save a Storable. Save a new version of the Storable.
 	 * 
@@ -48,7 +50,7 @@ public abstract class Storage {
 	 * @throws PermissionException
 	 */
 	public abstract void save(Storable content) throws StorageException, PermissionException;
-	
+
 	/**
 	 * Get an Object from the storage.
 	 * 
@@ -57,10 +59,11 @@ public abstract class Storage {
 	 * @return The stored Object.
 	 * @throws StorageException
 	 * @throws PermissionException
-	 * @throws NotFoundException 
+	 * @throws NotFoundException
 	 */
-	public abstract Storable load(Class<? extends Storable> cls, String id) throws StorageException, PermissionException, NotFoundException;
-	
+	public abstract Storable load(Class<? extends Storable> cls, String id) throws StorageException,
+			PermissionException, NotFoundException;
+
 	/**
 	 * Delete an Object form the Storage.
 	 * 
@@ -68,7 +71,8 @@ public abstract class Storage {
 	 * @param id Id of the Object.
 	 * @throws StorageException
 	 * @throws PermissionException
-	 * @throws NotFoundException 
+	 * @throws NotFoundException
 	 */
-	public abstract void delete(Class<? extends Storable> cls, String id) throws StorageException, PermissionException, NotFoundException;
+	public abstract void delete(Class<? extends Storable> cls, String id) throws StorageException, PermissionException,
+			NotFoundException;
 }

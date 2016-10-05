@@ -1,9 +1,9 @@
 package i5.las2peer.services.threadedCommentService.storage;
 
+import i5.las2peer.api.Context;
 import i5.las2peer.api.exceptions.ArtifactNotFoundException;
 import i5.las2peer.persistency.Envelope;
 import i5.las2peer.security.Agent;
-import i5.las2peer.security.Context;
 import i5.las2peer.security.GroupAgent;
 import i5.las2peer.security.L2pSecurityException;
 import i5.las2peer.tools.CryptoException;
@@ -89,7 +89,6 @@ public class DHTStorage extends Storage {
 			GroupAgent ownerAgent = getContext().requestGroupAgent(owner);
 
 			// store new version
-			// TODO BUG in las2peer: wrong method is called:
 			Envelope newEnv = getContext().createEnvelope(previousVersion, content);
 			getContext().storeEnvelope(newEnv, ownerAgent);
 		} catch (L2pSecurityException e) {

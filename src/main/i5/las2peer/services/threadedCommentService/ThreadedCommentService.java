@@ -1,10 +1,9 @@
 package i5.las2peer.services.threadedCommentService;
 
+import i5.las2peer.api.Context;
 import i5.las2peer.p2p.AgentNotKnownException;
-import i5.las2peer.restMapper.HttpResponse;
-import i5.las2peer.restMapper.MediaType;
 import i5.las2peer.restMapper.RESTService;
-import i5.las2peer.restMapper.annotations.ContentParam;
+import i5.las2peer.restMapper.annotations.ServicePath;
 import i5.las2peer.security.Agent;
 import i5.las2peer.security.AgentLockedException;
 import i5.las2peer.security.UserAgent;
@@ -30,6 +29,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -37,6 +37,9 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
@@ -50,21 +53,7 @@ import net.minidev.json.JSONObject;
  * @author Jasper Nalbach
  *
  */
-@Path("/comments")
-@Api
-@SwaggerDefinition(
-		info = @Info(
-				title = "las2peer Threaded Comment Service",
-				version = "0.1",
-				description = "A las2peer Service providing threaded comment functionality intended to be integrated with other services.",
-				termsOfService = "",
-				contact = @Contact(
-						name = "Jasper Nalbach",
-						url = "las2peer.org",
-						email = "nalbach@dbis.rwth-aachen.de"),
-				license = @License(
-						name = "MIT",
-						url = "")))
+@ServicePath("/comments")
 public class ThreadedCommentService extends RESTService {
 
 	public ThreadedCommentService() {
@@ -161,342 +150,361 @@ public class ThreadedCommentService extends RESTService {
 
 	}
 
-	// REST
+	@Api
+	@SwaggerDefinition(
+			info = @Info(
+					title = "las2peer Threaded Comment Service",
+					version = "0.1",
+					description = "A las2peer Service providing threaded comment functionality intended to be integrated with other services.",
+					termsOfService = "",
+					contact = @Contact(
+							name = "Jasper Nalbach",
+							url = "las2peer.org",
+							email = "nalbach@dbis.rwth-aachen.de"),
+					license = @License(
+							name = "MIT",
+							url = "")))
+	@Path("/")
+	public static class RootResource {
+		private ThreadedCommentService service = (ThreadedCommentService) Context.getCurrent().getService();
 
-	/**
-	 * Get the comment thread including comments.
-	 * 
-	 * @param threadId Id of the thread
-	 * @return
-	 */
-	@GET
-	@Path("/threads/{id}")
-	@Produces(MediaType.APPLICATION_JSON)
-	@ApiResponses(
-			value = { @ApiResponse(
-					code = HttpURLConnection.HTTP_OK,
-					message = "Comment Thread"), @ApiResponse(
-					code = HttpURLConnection.HTTP_FORBIDDEN,
-					message = "Forbidden"), @ApiResponse(
-					code = HttpURLConnection.HTTP_NOT_FOUND,
-					message = "Not Found"), @ApiResponse(
-					code = HttpURLConnection.HTTP_INTERNAL_ERROR,
-					message = "Internal Server Error") })
-	@ApiOperation(
-			value = "getCommentThread",
-			notes = "Get comment thread including comments")
-	public HttpResponse getCommentThread(@PathParam("id") String threadId) {
-		try {
-			CommentThread thread = _getCommentThread(threadId);
-			List<Comment> comments = thread.getComments();
+		/**
+		 * Get the comment thread including comments.
+		 * 
+		 * @param threadId Id of the thread
+		 * @return
+		 */
+		@GET
+		@Path("/threads/{id}")
+		@Produces(MediaType.APPLICATION_JSON)
+		@ApiResponses(
+				value = { @ApiResponse(
+						code = HttpURLConnection.HTTP_OK,
+						message = "Comment Thread"), @ApiResponse(
+						code = HttpURLConnection.HTTP_FORBIDDEN,
+						message = "Forbidden"), @ApiResponse(
+						code = HttpURLConnection.HTTP_NOT_FOUND,
+						message = "Not Found"), @ApiResponse(
+						code = HttpURLConnection.HTTP_INTERNAL_ERROR,
+						message = "Internal Server Error") })
+		@ApiOperation(
+				value = "getCommentThread",
+				notes = "Get comment thread including comments")
+		public Response getCommentThread(@PathParam("id") String threadId) {
+			try {
+				CommentThread thread = service._getCommentThread(threadId);
+				List<Comment> comments = thread.getComments();
 
-			JSONArray list = new JSONArray();
-			for (Comment comment : comments) {
-				list.add(_serializeComment(comment, getContext().getAgent(comment.getAgentId())));
+				JSONArray list = new JSONArray();
+				for (Comment comment : comments) {
+					list.add(service._serializeComment(comment, Context.getCurrent().getAgent(comment.getAgentId())));
+				}
+
+				JSONObject response = new JSONObject();
+				response.put("id", thread.getId());
+				response.put("isAdmin", Context.getCurrent().hasAccess(thread.getPermissions().owner));
+				response.put("isWriter", Context.getCurrent().hasAccess(thread.getPermissions().owner)
+						|| Context.getCurrent().hasAccess(thread.getPermissions().writer));
+				response.put("comments", list);
+
+				return Response.ok().entity(response.toJSONString()).build();
+			} catch (AgentLockedException | PermissionException e) {
+				return Response.status(Status.FORBIDDEN).entity("Forbidden").build();
+			} catch (StorageException | AgentNotKnownException e) {
+				return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Internal Server Error").build();
+			} catch (NotFoundException e) {
+				return Response.status(Status.NOT_FOUND).entity("Not Found").build();
 			}
-
-			JSONObject response = new JSONObject();
-			response.put("id", thread.getId());
-			response.put("isAdmin", getContext().hasAccess(thread.getPermissions().owner));
-			response.put(
-					"isWriter",
-					getContext().hasAccess(thread.getPermissions().owner)
-							|| getContext().hasAccess(thread.getPermissions().writer));
-			response.put("comments", list);
-
-			return new HttpResponse(response.toJSONString(), HttpURLConnection.HTTP_OK);
-		} catch (AgentLockedException | PermissionException e) {
-			e.printStackTrace();
-			return new HttpResponse("Forbidden", HttpURLConnection.HTTP_FORBIDDEN);
-		} catch (StorageException | AgentNotKnownException e) {
-			e.printStackTrace();
-			return new HttpResponse("Internal Server Error", HttpURLConnection.HTTP_INTERNAL_ERROR);
-		} catch (NotFoundException e) {
-			return new HttpResponse("Not Found", HttpURLConnection.HTTP_NOT_FOUND);
 		}
-	}
 
-	/**
-	 * Create new comment
-	 * 
-	 * @param parentId Id of the parent
-	 * @param body Comment body
-	 * @return
-	 */
-	@POST
-	@Path("/threads/{id}")
-	@Produces(MediaType.TEXT_PLAIN)
-	@ApiResponses(
-			value = { @ApiResponse(
-					code = HttpURLConnection.HTTP_CREATED,
-					message = "Comment Id"), @ApiResponse(
-					code = HttpURLConnection.HTTP_FORBIDDEN,
-					message = "Forbidden"), @ApiResponse(
-					code = HttpURLConnection.HTTP_NOT_FOUND,
-					message = "Not Found"), @ApiResponse(
-					code = HttpURLConnection.HTTP_INTERNAL_ERROR,
-					message = "Internal Server Error") })
-	@ApiOperation(
-			value = "createComment",
-			notes = "Create a new Comment")
-	public HttpResponse createComment(@PathParam("id") String parentId, @ContentParam String body) {
-		try {
-			Comment comment = new Comment(getContext().getMainAgent().getId(), new Date(), body);
-			_getCommentThread(parentId).addComment(comment);
-			return new HttpResponse(comment.getId(), HttpURLConnection.HTTP_CREATED);
-		} catch (PermissionException e) {
-			e.printStackTrace();
-			return new HttpResponse("Forbidden", HttpURLConnection.HTTP_FORBIDDEN);
-		} catch (StorageException e) {
-			e.printStackTrace();
-			return new HttpResponse("Internal Server Error", HttpURLConnection.HTTP_INTERNAL_ERROR);
-		} catch (NotFoundException e) {
-			return new HttpResponse("Not Found", HttpURLConnection.HTTP_NOT_FOUND);
-		}
-	}
-
-	/**
-	 * Create new comment (reply to another comment)
-	 * 
-	 * @param parentId Id of the parent comment
-	 * @param body Comment body
-	 * @return
-	 */
-	@POST
-	@Path("/comment/{id}/comments")
-	@Produces(MediaType.TEXT_PLAIN)
-	@ApiResponses(
-			value = { @ApiResponse(
-					code = HttpURLConnection.HTTP_CREATED,
-					message = "Comment Id"), @ApiResponse(
-					code = HttpURLConnection.HTTP_FORBIDDEN,
-					message = "Forbidden"), @ApiResponse(
-					code = HttpURLConnection.HTTP_NOT_FOUND,
-					message = "Not Found"), @ApiResponse(
-					code = HttpURLConnection.HTTP_INTERNAL_ERROR,
-					message = "Internal Server Error") })
-	@ApiOperation(
-			value = "createCommentReply",
-			notes = "Create a new Comment (reply)")
-	public HttpResponse createCommentReply(@PathParam("id") String parentId, @ContentParam String body) {
-		try {
-			Comment comment = new Comment(getContext().getMainAgent().getId(), new Date(), body);
-			_getComment(parentId).addComment(comment);
-			return new HttpResponse(comment.getId(), HttpURLConnection.HTTP_CREATED);
-		} catch (PermissionException e) {
-			return new HttpResponse("Forbidden", HttpURLConnection.HTTP_FORBIDDEN);
-		} catch (StorageException e) {
-			e.printStackTrace();
-			return new HttpResponse("Internal Server Error", HttpURLConnection.HTTP_INTERNAL_ERROR);
-		} catch (NotFoundException e) {
-			return new HttpResponse("Not Found", HttpURLConnection.HTTP_NOT_FOUND);
-		}
-	}
-
-	/**
-	 * Get replys to another comment
-	 * 
-	 * @param commentId
-	 * @return
-	 */
-	@GET
-	@Path("/comment/{id}/comments")
-	@Produces(MediaType.APPLICATION_JSON)
-	@ApiResponses(
-			value = { @ApiResponse(
-					code = HttpURLConnection.HTTP_OK,
-					message = "Comment replys"), @ApiResponse(
-					code = HttpURLConnection.HTTP_FORBIDDEN,
-					message = "Forbidden"), @ApiResponse(
-					code = HttpURLConnection.HTTP_NOT_FOUND,
-					message = "Not Found"), @ApiResponse(
-					code = HttpURLConnection.HTTP_INTERNAL_ERROR,
-					message = "Internal Server Error") })
-	@ApiOperation(
-			value = "getCommentReplys",
-			notes = "Get comment thread including comments")
-	public HttpResponse getCommentReplys(@PathParam("id") String commentId) {
-		try {
-			Comment mainComment = _getComment(commentId);
-			List<Comment> comments = mainComment.getComments();
-
-			JSONArray list = new JSONArray();
-			for (Comment comment : comments) {
-				list.add(_serializeComment(comment, getContext().getAgent(comment.getAgentId())));
+		/**
+		 * Create new comment
+		 * 
+		 * @param parentId Id of the parent
+		 * @param body Comment body
+		 * @return
+		 */
+		@POST
+		@Path("/threads/{id}")
+		@Produces(MediaType.TEXT_PLAIN)
+		@Consumes(MediaType.TEXT_PLAIN)
+		@ApiResponses(
+				value = { @ApiResponse(
+						code = HttpURLConnection.HTTP_CREATED,
+						message = "Comment Id"), @ApiResponse(
+						code = HttpURLConnection.HTTP_FORBIDDEN,
+						message = "Forbidden"), @ApiResponse(
+						code = HttpURLConnection.HTTP_NOT_FOUND,
+						message = "Not Found"), @ApiResponse(
+						code = HttpURLConnection.HTTP_INTERNAL_ERROR,
+						message = "Internal Server Error") })
+		@ApiOperation(
+				value = "createComment",
+				notes = "Create a new Comment")
+		public Response createComment(@PathParam("id") String parentId, String body) {
+			try {
+				Comment comment = new Comment(Context.getCurrent().getMainAgent().getId(), new Date(), body);
+				service._getCommentThread(parentId).addComment(comment);
+				return Response.status(Status.CREATED).entity(comment.getId()).build();
+			} catch (PermissionException e) {
+				return Response.status(Status.FORBIDDEN).entity("Forbidden").build();
+			} catch (StorageException e) {
+				e.printStackTrace();
+				return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Internal Server Error").build();
+			} catch (NotFoundException e) {
+				return Response.status(Status.NOT_FOUND).entity("Not Found").build();
 			}
+		}
 
-			JSONObject response = new JSONObject();
-			response.put("id", mainComment.getId());
-			response.put("comments", list);
+		/**
+		 * Create new comment (reply to another comment)
+		 * 
+		 * @param parentId Id of the parent comment
+		 * @param body Comment body
+		 * @return
+		 */
+		@POST
+		@Path("/comment/{id}/comments")
+		@Produces(MediaType.TEXT_PLAIN)
+		@Consumes(MediaType.TEXT_PLAIN)
+		@ApiResponses(
+				value = { @ApiResponse(
+						code = HttpURLConnection.HTTP_CREATED,
+						message = "Comment Id"), @ApiResponse(
+						code = HttpURLConnection.HTTP_FORBIDDEN,
+						message = "Forbidden"), @ApiResponse(
+						code = HttpURLConnection.HTTP_NOT_FOUND,
+						message = "Not Found"), @ApiResponse(
+						code = HttpURLConnection.HTTP_INTERNAL_ERROR,
+						message = "Internal Server Error") })
+		@ApiOperation(
+				value = "createCommentReply",
+				notes = "Create a new Comment (reply)")
+		public Response createCommentReply(@PathParam("id") String parentId, String body) {
+			try {
+				Comment comment = new Comment(Context.getCurrent().getMainAgent().getId(), new Date(), body);
+				service._getComment(parentId).addComment(comment);
+				return Response.status(Status.CREATED).entity(comment.getId()).build();
+			} catch (PermissionException e) {
+				return Response.status(Status.FORBIDDEN).entity("Forbidden").build();
+			} catch (StorageException e) {
+				return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Internal Server Error").build();
+			} catch (NotFoundException e) {
+				return Response.status(Status.NOT_FOUND).entity("Not Found").build();
+			}
+		}
 
-			return new HttpResponse(response.toJSONString(), HttpURLConnection.HTTP_OK);
-		} catch (PermissionException e) {
-			return new HttpResponse("Forbidden", HttpURLConnection.HTTP_FORBIDDEN);
-		} catch (StorageException | AgentNotKnownException e) {
-			e.printStackTrace();
-			return new HttpResponse("Internal Server Error", HttpURLConnection.HTTP_INTERNAL_ERROR);
-		} catch (NotFoundException e) {
-			return new HttpResponse("Not Found", HttpURLConnection.HTTP_NOT_FOUND);
+		/**
+		 * Get replys to another comment
+		 * 
+		 * @param commentId
+		 * @return
+		 */
+		@GET
+		@Path("/comment/{id}/comments")
+		@Produces(MediaType.APPLICATION_JSON)
+		@ApiResponses(
+				value = { @ApiResponse(
+						code = HttpURLConnection.HTTP_OK,
+						message = "Comment replys"), @ApiResponse(
+						code = HttpURLConnection.HTTP_FORBIDDEN,
+						message = "Forbidden"), @ApiResponse(
+						code = HttpURLConnection.HTTP_NOT_FOUND,
+						message = "Not Found"), @ApiResponse(
+						code = HttpURLConnection.HTTP_INTERNAL_ERROR,
+						message = "Internal Server Error") })
+		@ApiOperation(
+				value = "getCommentReplys",
+				notes = "Get comment thread including comments")
+		public Response getCommentReplys(@PathParam("id") String commentId) {
+			try {
+				Comment mainComment = service._getComment(commentId);
+				List<Comment> comments = mainComment.getComments();
+
+				JSONArray list = new JSONArray();
+				for (Comment comment : comments) {
+					list.add(service._serializeComment(comment, Context.getCurrent().getAgent(comment.getAgentId())));
+				}
+
+				JSONObject response = new JSONObject();
+				response.put("id", mainComment.getId());
+				response.put("comments", list);
+
+				return Response.ok().entity(response.toJSONString()).build();
+			} catch (PermissionException e) {
+				return Response.status(Status.FORBIDDEN).entity("Forbidden").build();
+			} catch (StorageException | AgentNotKnownException e) {
+				return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Internal Server Error").build();
+			} catch (NotFoundException e) {
+				return Response.status(Status.NOT_FOUND).entity("Not Found").build();
+			}
+		}
+
+		/**
+		 * Get a comment by id
+		 * 
+		 * @param id Id of the comment
+		 * @return
+		 */
+		@GET
+		@Path("/comment/{id}")
+		@Produces(MediaType.APPLICATION_JSON)
+		@ApiResponses(
+				value = { @ApiResponse(
+						code = HttpURLConnection.HTTP_OK,
+						message = "Comment"), @ApiResponse(
+						code = HttpURLConnection.HTTP_FORBIDDEN,
+						message = "Forbidden"), @ApiResponse(
+						code = HttpURLConnection.HTTP_NOT_FOUND,
+						message = "Not Found"), @ApiResponse(
+						code = HttpURLConnection.HTTP_INTERNAL_ERROR,
+						message = "Internal Server Error") })
+		@ApiOperation(
+				value = "Comment",
+				notes = "Get a comment by id.")
+		public Response getComment(@PathParam("id") String id) {
+			try {
+				Comment comment = service._getComment(id);
+
+				return Response
+						.ok()
+						.entity(service._serializeComment(comment, Context.getCurrent().getAgent(comment.getAgentId()))
+								.toJSONString()).build();
+
+			} catch (PermissionException e) {
+				return Response.status(Status.FORBIDDEN).entity("Forbidden").build();
+			} catch (StorageException | AgentNotKnownException e) {
+				return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Internal Server Error").build();
+			} catch (NotFoundException e) {
+				return Response.status(Status.NOT_FOUND).entity("Not Found").build();
+			}
+		}
+
+		/**
+		 * Edit a comment
+		 * 
+		 * @param id comment id
+		 * @param body comment body
+		 * @return
+		 */
+		@PUT
+		@Path("/comment/{id}")
+		@Produces(MediaType.APPLICATION_JSON)
+		@Consumes(MediaType.TEXT_PLAIN)
+		@ApiResponses(
+				value = { @ApiResponse(
+						code = HttpURLConnection.HTTP_OK,
+						message = "Updated"), @ApiResponse(
+						code = HttpURLConnection.HTTP_FORBIDDEN,
+						message = "Forbidden"), @ApiResponse(
+						code = HttpURLConnection.HTTP_NOT_FOUND,
+						message = "Not Found"), @ApiResponse(
+						code = HttpURLConnection.HTTP_INTERNAL_ERROR,
+						message = "Internal Server Error") })
+		@ApiOperation(
+				value = "editComment",
+				notes = "Edit a Comment")
+		public Response editComment(@PathParam("id") String id, String body) {
+			try {
+				Comment comment = service._getComment(id);
+				comment.setBody(body);
+				return Response
+						.ok()
+						.entity(service._serializeComment(comment, Context.getCurrent().getAgent(comment.getAgentId()))
+								.toJSONString()).build();
+			} catch (PermissionException e) {
+				return Response.status(Status.FORBIDDEN).entity("Forbidden").build();
+			} catch (StorageException | AgentNotKnownException e) {
+				return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Internal Server Error").build();
+			} catch (NotFoundException e) {
+				return Response.status(Status.NOT_FOUND).entity("Not Found").build();
+			}
+		}
+
+		/**
+		 * Deletes a comment
+		 * 
+		 * @param id comment id
+		 * @return
+		 */
+		@DELETE
+		@Path("/comment/{id}")
+		@Produces(MediaType.APPLICATION_JSON)
+		@ApiResponses(
+				value = { @ApiResponse(
+						code = HttpURLConnection.HTTP_OK,
+						message = "Deleted resource"), @ApiResponse(
+						code = HttpURLConnection.HTTP_FORBIDDEN,
+						message = "Forbidden"), @ApiResponse(
+						code = HttpURLConnection.HTTP_NOT_FOUND,
+						message = "Not Found"), @ApiResponse(
+						code = HttpURLConnection.HTTP_INTERNAL_ERROR,
+						message = "Internal Server Error") })
+		@ApiOperation(
+				value = "deleteComment",
+				notes = "Delete a Comment")
+		public Response deleteComment(@PathParam("id") String id) {
+			try {
+				Comment comment = service._getComment(id);
+				String response = service._serializeComment(comment,
+						Context.getCurrent().getAgent(comment.getAgentId())).toJSONString();
+				comment.delete();
+				return Response.ok().entity(response).build();
+			} catch (PermissionException e) {
+				return Response.status(Status.FORBIDDEN).entity("Forbidden").build();
+			} catch (NotFoundException e) {
+				return Response.status(Status.NOT_FOUND).entity("Not Found").build();
+			} catch (StorageException | AgentNotKnownException e) {
+				return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Internal Server Error").build();
+			}
+		}
+
+		/**
+		 * Submit a vote for a comment
+		 * 
+		 * @param commentId comment id
+		 * @param body "true" for upvote, "false" for downvote
+		 * @return
+		 */
+		@POST
+		@Path("/comment/{id}/votes")
+		@Produces(MediaType.APPLICATION_JSON)
+		@ApiResponses(
+				value = { @ApiResponse(
+						code = HttpURLConnection.HTTP_CREATED,
+						message = "Vote submitted"), @ApiResponse(
+						code = HttpURLConnection.HTTP_FORBIDDEN,
+						message = "Forbidden"), @ApiResponse(
+						code = HttpURLConnection.HTTP_NOT_FOUND,
+						message = "Not Found"), @ApiResponse(
+						code = HttpURLConnection.HTTP_INTERNAL_ERROR,
+						message = "Internal Server Error") })
+		@ApiOperation(
+				value = "addVote",
+				notes = "Add a vote")
+		@Consumes(MediaType.TEXT_PLAIN)
+		public Response addVote(@PathParam("id") String commentId, String body) {
+			try {
+				Comment c = service._getComment(commentId);
+				c.vote(Context.getCurrent().getMainAgent().getId(), body.equals("true"));
+
+				JSONObject response = new JSONObject();
+				response.put("upvotes", c.getUpvotes());
+				response.put("downvotes", c.getDownvotes());
+
+				return Response.status(Status.CREATED).entity(response.toJSONString()).build();
+			} catch (PermissionException e) {
+				return Response.status(Status.FORBIDDEN).entity("Forbidden").build();
+			} catch (StorageException e) {
+				return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Internal Server Error").build();
+			} catch (NotFoundException e) {
+				return Response.status(Status.NOT_FOUND).entity("Not Found").build();
+			}
 		}
 	}
 
-	/**
-	 * Get a comment by id
-	 * 
-	 * @param id Id of the comment
-	 * @return
-	 */
-	@GET
-	@Path("/comment/{id}")
-	@Produces(MediaType.APPLICATION_JSON)
-	@ApiResponses(
-			value = { @ApiResponse(
-					code = HttpURLConnection.HTTP_OK,
-					message = "Comment"), @ApiResponse(
-					code = HttpURLConnection.HTTP_FORBIDDEN,
-					message = "Forbidden"), @ApiResponse(
-					code = HttpURLConnection.HTTP_NOT_FOUND,
-					message = "Not Found"), @ApiResponse(
-					code = HttpURLConnection.HTTP_INTERNAL_ERROR,
-					message = "Internal Server Error") })
-	@ApiOperation(
-			value = "Comment",
-			notes = "Get a comment by id.")
-	public HttpResponse getComment(@PathParam("id") String id) {
-		try {
-			Comment comment = _getComment(id);
-
-			return new HttpResponse(_serializeComment(comment, getContext().getAgent(comment.getAgentId()))
-					.toJSONString(), HttpURLConnection.HTTP_OK);
-
-		} catch (PermissionException e) {
-			return new HttpResponse("Forbidden", HttpURLConnection.HTTP_FORBIDDEN);
-		} catch (StorageException | AgentNotKnownException e) {
-			e.printStackTrace();
-			return new HttpResponse("Internal Server Error", HttpURLConnection.HTTP_INTERNAL_ERROR);
-		} catch (NotFoundException e) {
-			return new HttpResponse("Not Found", HttpURLConnection.HTTP_NOT_FOUND);
-		}
+	@Override
+	protected void initResources() {
+		getResourceConfig().register(RootResource.class);
 	}
-
-	/**
-	 * Edit a comment
-	 * 
-	 * @param id comment id
-	 * @param body comment body
-	 * @return
-	 */
-	@PUT
-	@Path("/comment/{id}")
-	@Produces(MediaType.APPLICATION_JSON)
-	@ApiResponses(
-			value = { @ApiResponse(
-					code = HttpURLConnection.HTTP_OK,
-					message = "Updated"), @ApiResponse(
-					code = HttpURLConnection.HTTP_FORBIDDEN,
-					message = "Forbidden"), @ApiResponse(
-					code = HttpURLConnection.HTTP_NOT_FOUND,
-					message = "Not Found"), @ApiResponse(
-					code = HttpURLConnection.HTTP_INTERNAL_ERROR,
-					message = "Internal Server Error") })
-	@ApiOperation(
-			value = "editComment",
-			notes = "Edit a Comment")
-	public HttpResponse editComment(@PathParam("id") String id, @ContentParam String body) {
-		try {
-			Comment comment = _getComment(id);
-			comment.setBody(body);
-			return new HttpResponse(_serializeComment(comment, getContext().getAgent(comment.getAgentId()))
-					.toJSONString(), HttpURLConnection.HTTP_OK);
-		} catch (PermissionException e) {
-			return new HttpResponse("Forbidden", HttpURLConnection.HTTP_FORBIDDEN);
-		} catch (StorageException | AgentNotKnownException e) {
-			e.printStackTrace();
-			return new HttpResponse("Internal Server Error", HttpURLConnection.HTTP_INTERNAL_ERROR);
-		} catch (NotFoundException e) {
-			return new HttpResponse("Not Found", HttpURLConnection.HTTP_NOT_FOUND);
-		}
-	}
-
-	/**
-	 * Deletes a comment
-	 * 
-	 * @param id comment id
-	 * @return
-	 */
-	@DELETE
-	@Path("/comment/{id}")
-	@Produces(MediaType.APPLICATION_JSON)
-	@ApiResponses(
-			value = { @ApiResponse(
-					code = HttpURLConnection.HTTP_OK,
-					message = "Deleted resource"), @ApiResponse(
-					code = HttpURLConnection.HTTP_FORBIDDEN,
-					message = "Forbidden"), @ApiResponse(
-					code = HttpURLConnection.HTTP_NOT_FOUND,
-					message = "Not Found"), @ApiResponse(
-					code = HttpURLConnection.HTTP_INTERNAL_ERROR,
-					message = "Internal Server Error") })
-	@ApiOperation(
-			value = "deleteComment",
-			notes = "Delete a Comment")
-	public HttpResponse deleteComment(@PathParam("id") String id) {
-		try {
-			Comment comment = _getComment(id);
-			String response = _serializeComment(comment, getContext().getAgent(comment.getAgentId())).toJSONString();
-			comment.delete();
-			return new HttpResponse(response, HttpURLConnection.HTTP_OK);
-		} catch (PermissionException e) {
-			return new HttpResponse("Forbidden", HttpURLConnection.HTTP_FORBIDDEN);
-		} catch (NotFoundException e) {
-			return new HttpResponse("Not Found", HttpURLConnection.HTTP_NOT_FOUND);
-		} catch (StorageException | AgentNotKnownException e) {
-			e.printStackTrace();
-			return new HttpResponse("Internal Server Error", HttpURLConnection.HTTP_INTERNAL_ERROR);
-		}
-	}
-
-	/**
-	 * Submit a vote for a comment
-	 * 
-	 * @param commentId comment id
-	 * @param body "true" for upvote, "false" for downvote
-	 * @return
-	 */
-	@POST
-	@Path("/comment/{id}/votes")
-	@Produces(MediaType.APPLICATION_JSON)
-	@ApiResponses(
-			value = { @ApiResponse(
-					code = HttpURLConnection.HTTP_CREATED,
-					message = "Vote submitted"), @ApiResponse(
-					code = HttpURLConnection.HTTP_FORBIDDEN,
-					message = "Forbidden"), @ApiResponse(
-					code = HttpURLConnection.HTTP_NOT_FOUND,
-					message = "Not Found"), @ApiResponse(
-					code = HttpURLConnection.HTTP_INTERNAL_ERROR,
-					message = "Internal Server Error") })
-	@ApiOperation(
-			value = "addVote",
-			notes = "Add a vote")
-	public HttpResponse addVote(@PathParam("id") String commentId, @ContentParam String body) {
-		try {
-			Comment c = _getComment(commentId);
-			c.vote(getContext().getMainAgent().getId(), body.equals("true"));
-
-			JSONObject response = new JSONObject();
-			response.put("upvotes", c.getUpvotes());
-			response.put("downvotes", c.getDownvotes());
-
-			return new HttpResponse(response.toJSONString(), HttpURLConnection.HTTP_CREATED);
-		} catch (PermissionException e) {
-			return new HttpResponse("Forbidden", HttpURLConnection.HTTP_FORBIDDEN);
-		} catch (StorageException e) {
-			e.printStackTrace();
-			return new HttpResponse("Internal Server Error", HttpURLConnection.HTTP_INTERNAL_ERROR);
-		} catch (NotFoundException e) {
-			return new HttpResponse("Not Found", HttpURLConnection.HTTP_NOT_FOUND);
-		}
-	}
-
 }
