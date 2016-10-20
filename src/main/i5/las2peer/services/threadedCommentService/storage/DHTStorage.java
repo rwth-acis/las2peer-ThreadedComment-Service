@@ -163,9 +163,6 @@ public class DHTStorage extends Storage {
 		if (env == null)
 			throw new NotFoundException("Envelope could not be found, nor created!");
 
-		System.out.println(id);
-		System.out.println(env.getReaderKeys().keySet());
-
 		try {
 			data = (Storable) env.getContent();
 		} catch (CryptoException | L2pSecurityException e) {

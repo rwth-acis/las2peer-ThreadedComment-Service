@@ -56,6 +56,8 @@ import net.minidev.json.JSONObject;
 @ServicePath("/comments")
 public class ThreadedCommentService extends RESTService {
 
+	// TODO make use of Jersey features
+
 	public ThreadedCommentService() {
 	}
 
@@ -127,7 +129,6 @@ public class ThreadedCommentService extends RESTService {
 			CommentThread thread = getStorage().init(new CommentThread(new Permissions(owner, writer, reader)));
 			return thread.getId();
 		} catch (Exception e) {
-			// e.printStackTrace();
 			return null;
 		}
 	}
@@ -144,7 +145,6 @@ public class ThreadedCommentService extends RESTService {
 
 			return true;
 		} catch (Exception e) {
-			// e.printStackTrace();
 			return false;
 		}
 
