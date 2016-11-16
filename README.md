@@ -1,6 +1,6 @@
 ![las2peer](https://github.com/rwth-acis/LAS2peer/blob/master/img/logo/bitmap/las2peer-logo-128x128.png)
 
-las2peer-CommentService [![Build Status](https://travis-ci.org/rwth-acis/las2peer-Comment-Service.svg?branch=master)](https://travis-ci.org/rwth-acis/las2peer-Comment-Service)
+las2peer-CommentService [![Build Status](https://travis-ci.org/rwth-acis/las2peer-ThreadedComment-Service.svg?branch=master)](https://travis-ci.org/rwth-acis/las2peer-Comment-Service)
 =======================
 
 This is a [las2peer](https://github.com/rwth-acis/las2peer/) service allowing other services to provide comment functionality.
