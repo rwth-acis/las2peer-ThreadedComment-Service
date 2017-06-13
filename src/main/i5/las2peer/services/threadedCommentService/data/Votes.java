@@ -24,8 +24,8 @@ public class Votes extends Storable {
 
 	private Permissions permissions;
 
-	private Set<Long> upvotes;
-	private Set<Long> downvotes;
+	private Set<String> upvotes;
+	private Set<String> downvotes;
 
 	public Votes(Permissions permissions) {
 		this.permissions = permissions;
@@ -75,7 +75,7 @@ public class Votes extends Storable {
 	 * @throws StorageException
 	 * @throws PermissionException
 	 */
-	void vote(long agentId, boolean upvote) throws StorageException, PermissionException {
+	void vote(String agentId, boolean upvote) throws StorageException, PermissionException {
 		upvotes.remove(agentId);
 		downvotes.remove(agentId);
 
@@ -93,7 +93,7 @@ public class Votes extends Storable {
 	 * @param agentId the user
 	 * @return 1 = upvote, 0 = no vote, -1 = downvote
 	 */
-	short getVote(long agentId) {
+	short getVote(String agentId) {
 		if (upvotes.contains(agentId))
 			return 1;
 		else if (downvotes.contains(agentId))

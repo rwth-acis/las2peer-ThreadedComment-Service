@@ -28,11 +28,6 @@ public abstract class StorablePointer<T extends Storable> implements Serializabl
 	private transient T cache;
 	
 	/**
-	 * Class of the target
-	 */
-	private Class<? extends Storable> cls;
-	
-	/**
 	 * Construct a new StorablePointer
 	 * @param parent Parent element
 	 * @param target Target element
@@ -40,7 +35,6 @@ public abstract class StorablePointer<T extends Storable> implements Serializabl
 	protected StorablePointer(Storable parent, T target) {
 		this.id = target.getId();
 		this.cache = target;
-		this.cls = target.getClass();
 		this.parent = parent;
 	}
 	
@@ -54,7 +48,7 @@ public abstract class StorablePointer<T extends Storable> implements Serializabl
 	public T get() throws StorageException, PermissionException {
 		if (this.cache == null)
 			try {
-				this.cache = (T)parent.getStorage().load(this.cls, this.id);
+				this.cache = (T)parent.getStorage().load(this.id);
 			} catch (NotFoundException e) {
 				throw new StorageException("Target not found! Storage is inconsistent", e);
 			}

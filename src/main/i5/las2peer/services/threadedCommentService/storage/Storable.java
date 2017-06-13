@@ -23,10 +23,6 @@ public abstract class Storable implements Serializable {
 	 * Timestamp of first instantiation.
 	 */
 	private long timeCreated;
-	/**
-	 * ID of the "owning" GroupAgent. The Envelope will be signed with this agent; all wriwters will be added to this Group.
-	 */
-	private long owner;
 	
 	// storage management
 	/**
@@ -42,11 +38,11 @@ public abstract class Storable implements Serializable {
 	/**
 	 * List of writers. This variable is only used before the Storable is initialized; will be used to create the Envelope.
 	 */
-	private transient List<Long> writer;
+	private transient List<String> writer;
 	/**
 	 * List of readers. This variable is only used before the Storable is initialized; will be used to create the Envelope.
 	 */
-	private transient List<Long> reader;
+	private transient List<String> reader;
 	
 	// storage management
 	/**
@@ -59,7 +55,6 @@ public abstract class Storable implements Serializable {
 		this.writer = new ArrayList<>();
 		this.id = UUID.randomUUID().toString();
 		this.timeCreated = System.currentTimeMillis();
-		this.owner = 0;
 		
 		this.referenceCounter = 0;
 		this.stored = false;
@@ -203,7 +198,7 @@ public abstract class Storable implements Serializable {
 		
 		// delete this object from storage
 		try {
-			storage.delete(this.getClass(), getId());
+			storage.delete(getId());
 		}
 		catch (NotFoundException e) {
 			throw new StorageException("Storable does not exist", e);
@@ -218,7 +213,7 @@ public abstract class Storable implements Serializable {
 	 * @param reader
 	 * @throws StorageException
 	 */
-	public void addWriter(Long reader) throws StorageException {
+	public void addWriter(String reader) throws StorageException {
 		if (this.stored)
 			throw new StorageException("Storable is already stored, permissions cannot be changed anymore.");
 		
@@ -230,7 +225,7 @@ public abstract class Storable implements Serializable {
 	 * @return
 	 * @throws StorageException
 	 */
-	protected List<Long> getWriter() throws StorageException {
+	protected List<String> getWriter() throws StorageException {
 		if (this.stored)
 			throw new StorageException("Storable is already stored, cannot get writer this way.");
 		
@@ -242,7 +237,7 @@ public abstract class Storable implements Serializable {
 	 * @param reader
 	 * @throws StorageException
 	 */
-	public void addReader(Long reader) throws StorageException {
+	public void addReader(String reader) throws StorageException {
 		if (this.stored)
 			throw new StorageException("Storable is already stored, permissions cannot be changed anymore.");
 		
@@ -254,32 +249,11 @@ public abstract class Storable implements Serializable {
 	 * @return
 	 * @throws StorageException
 	 */
-	protected List<Long> getReader() throws StorageException {
+	protected List<String> getReader() throws StorageException {
 		if (this.stored)
 			throw new StorageException("Storable is already stored, cannot get reader this way.");
 		
 		return reader;
 	}
 	
-	
-	/**
-	 * Set the owning GroupAgent of this Storable.
-	 * @param owner
-	 * @throws StorageException
-	 */
-	void setOwner(long owner) throws StorageException {
-		if (this.stored)
-			throw new StorageException("This should never happen.");
-		
-		this.owner = owner;
-	}
-	
-	/**
-	 * Get the owning GroupAgent of this Storable
-	 * @return
-	 * @throws StorageException
-	 */
-	long getOwner() throws StorageException {
-		return owner;
-	}
 }

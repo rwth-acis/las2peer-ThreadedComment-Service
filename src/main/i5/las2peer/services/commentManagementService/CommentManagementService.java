@@ -1,16 +1,12 @@
 package i5.las2peer.services.commentManagementService;
 
 import i5.las2peer.api.Context;
-import i5.las2peer.p2p.AgentAlreadyRegisteredException;
-import i5.las2peer.persistency.Envelope;
+import i5.las2peer.api.persistency.Envelope;
+import i5.las2peer.api.persistency.EnvelopeNotFoundException;
+import i5.las2peer.api.security.Agent;
+import i5.las2peer.api.security.GroupAgent;
 import i5.las2peer.restMapper.RESTService;
 import i5.las2peer.restMapper.annotations.ServicePath;
-import i5.las2peer.security.Agent;
-import i5.las2peer.security.AgentException;
-import i5.las2peer.security.GroupAgent;
-import i5.las2peer.security.L2pSecurityException;
-import i5.las2peer.tools.CryptoException;
-import i5.las2peer.tools.SerializationException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -48,17 +44,12 @@ public class CommentManagementService extends RESTService {
 
 	private static String containerIdentifier = "COMMENTEXAMPLESERVICE";
 
-	public CommentManagementService() {
-		setFieldValues();
-	}
-
 	// RMI methods
 
-	public String createCommentThread(long owner, long writer, long reader) throws Exception {
+	public String createCommentThread(String owner, String writer, String reader) throws Exception {
 		// invoke remote service method
-		Object result = this.invokeServiceMethod(
-				"i5.las2peer.services.threadedCommentService.ThreadedCommentService@0.1", "createCommentThread",
-				new Serializable[] { owner, writer, reader });
+		Object result = Context.get().invoke("i5.las2peer.services.threadedCommentService.ThreadedCommentService@0.1",
+				"createCommentThread", new Serializable[] { owner, writer, reader });
 
 		if (result != null) {
 			return (String) result;
@@ -69,9 +60,8 @@ public class CommentManagementService extends RESTService {
 
 	public boolean deleteCommentThread(String id) throws Exception {
 		// invoke remote service method
-		Object result = this.invokeServiceMethod(
-				"i5.las2peer.services.threadedCommentService.ThreadedCommentService@0.1", "deleteCommentThread",
-				new Serializable[] { id });
+		Object result = Context.get().invoke("i5.las2peer.services.threadedCommentService.ThreadedCommentService@0.1",
+				"deleteCommentThread", new Serializable[] { id });
 
 		if (result != null) {
 			return (Boolean) result;
@@ -84,7 +74,7 @@ public class CommentManagementService extends RESTService {
 
 	private Container fetchContainer() {
 		try {
-			Envelope env = getContext().fetchEnvelope(containerIdentifier);
+			Envelope env = Context.get().requestEnvelope(containerIdentifier);
 			return (Container) env.getContent();
 		} catch (Exception e) {
 			System.err.println("Can't fetch from network storage!");
@@ -93,39 +83,40 @@ public class CommentManagementService extends RESTService {
 	}
 
 	private void storeContainer(Container container) throws Exception {
-		Envelope env = null;
+		Envelope env ;
 		try {
-			Envelope previous = getContext().fetchEnvelope(containerIdentifier);
-			env = getContext().createEnvelope(previous, container);
-		} catch (Exception e) {
-			env = getContext().createEnvelope(containerIdentifier, container);
+			env = Context.get().requestEnvelope(containerIdentifier);
 		}
-		getContext().storeEnvelope(env);
+		catch (EnvelopeNotFoundException e) {
+			env = Context.get().createEnvelope(containerIdentifier);
+			env.setPublic();
+		}
+		
+		env.setContent(container);
+		Context.get().storeEnvelope(env);
 	}
 
 	// Group Creation helper
 	// TODO : group containing all users is not possible at the moment
 	// TODO : this should be done using a seperate group management service
-	private long createGroup(String agentString) throws L2pSecurityException, CryptoException, SerializationException,
-			AgentAlreadyRegisteredException, AgentException {
+	private String createGroup(String agentString) throws Exception {
 		String[] agentNameList = agentString.split(",");
 
 		Agent[] agentList = new Agent[agentNameList.length + 1];
-		agentList[0] = getContext().getMainAgent();
+		agentList[0] = Context.get().getMainAgent();
 
 		int i = 1;
 		for (String agentName : agentNameList) {
-			long agentId = getContext().getLocalNode().getAgentIdForLogin(agentName.trim());
-			Agent agent = getContext().getAgent(agentId);
+			String agentId = Context.get().getUserAgentIdentifierByLoginName(agentName.trim());
+			Agent agent = Context.get().fetchAgent(agentId);
 			agentList[i] = agent;
 			i++;
 		}
 
-		GroupAgent group = GroupAgent.createGroupAgent(agentList);
-		group.unlockPrivateKey(getContext().getMainAgent());
-		getContext().getLocalNode().storeAgent(group);
+		GroupAgent group = Context.get().createGroupAgent(agentList);
+		Context.get().storeAgent(group);
 
-		return group.getId();
+		return group.getIdentifier();
 	}
 
 	// Service methods
@@ -198,6 +189,7 @@ public class CommentManagementService extends RESTService {
 				return Response.status(Status.CREATED).entity(newThread).build();
 
 			} catch (Exception e) {
+				e.printStackTrace();
 				return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Internal Server Error").build();
 			}
 		}
@@ -229,6 +221,7 @@ public class CommentManagementService extends RESTService {
 				return Response.ok().entity("Deleted").build();
 
 			} catch (Exception e) {
+				e.printStackTrace();
 				return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Internal Server Error").build();
 			}
 		}

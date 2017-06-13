@@ -3,9 +3,9 @@ package i5.las2peer.services.threadedCommentService.data;
 import java.util.ArrayList;
 import java.util.List;
 
-import i5.las2peer.p2p.AgentNotKnownException;
-import i5.las2peer.security.Agent;
-import i5.las2peer.security.GroupAgent;
+import i5.las2peer.api.Context;
+import i5.las2peer.api.security.AgentNotFoundException;
+import i5.las2peer.api.security.AgentOperationFailedException;
 import i5.las2peer.services.threadedCommentService.storage.PermissionException;
 import i5.las2peer.services.threadedCommentService.storage.Storable;
 import i5.las2peer.services.threadedCommentService.storage.StorableSharedPointer;
@@ -80,22 +80,15 @@ class Comments extends Storable {
 		
 		// check if admin
 		boolean isAdmin = false;
-		Agent a;
 		try {
-			a = getStorage().getContext().getAgent(permissions.owner);
-		} catch (AgentNotKnownException e) {
+			isAdmin = Context.get().hasAccess(permissions.owner);
+		} catch (AgentNotFoundException | AgentOperationFailedException e) {
 			throw new StorageException(e);
-		}
-		if (a instanceof GroupAgent) {
-			isAdmin = ((GroupAgent)a).isMemberRecursive(getStorage().getContext().getMainAgent());
-		}
-		else {
-			isAdmin = getStorage().getContext().getMainAgent().getId() == a.getId();
 		}
 		
 		
 		// custom permission check
-		if (!(getStorage().getContext().getMainAgent().getId() == comment.getAgentId() || isAdmin )) {
+		if (!(Context.get().getMainAgent().getIdentifier().equals(comment.getAgentId()) || isAdmin )) {
 			throw new PermissionException("Comment list cannot be mondified (permission checked by the service)");
 		}
 		

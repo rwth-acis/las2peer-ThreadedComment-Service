@@ -1,19 +1,16 @@
 package i5.las2peer.services.threadedCommentService;
 
 import i5.las2peer.api.Context;
-import i5.las2peer.p2p.AgentNotKnownException;
+import i5.las2peer.api.security.Agent;
+import i5.las2peer.api.security.UserAgent;
 import i5.las2peer.restMapper.RESTService;
 import i5.las2peer.restMapper.annotations.ServicePath;
-import i5.las2peer.security.Agent;
-import i5.las2peer.security.AgentLockedException;
-import i5.las2peer.security.UserAgent;
 import i5.las2peer.services.threadedCommentService.data.Comment;
 import i5.las2peer.services.threadedCommentService.data.CommentThread;
 import i5.las2peer.services.threadedCommentService.data.Permissions;
-import i5.las2peer.services.threadedCommentService.storage.DHTStorage;
+import i5.las2peer.services.threadedCommentService.storage.Storage;
 import i5.las2peer.services.threadedCommentService.storage.NotFoundException;
 import i5.las2peer.services.threadedCommentService.storage.PermissionException;
-import i5.las2peer.services.threadedCommentService.storage.Storage;
 import i5.las2peer.services.threadedCommentService.storage.StorageException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -57,9 +54,8 @@ import net.minidev.json.JSONObject;
 public class ThreadedCommentService extends RESTService {
 
 	// TODO make use of Jersey features
-
-	public ThreadedCommentService() {
-	}
+	
+	// TODO refactor storage
 
 	/**
 	 * Create a new storage for the current context
@@ -68,17 +64,17 @@ public class ThreadedCommentService extends RESTService {
 	 * @throws StorageException
 	 */
 	private Storage getStorage() throws StorageException {
-		return new DHTStorage(this.getContext());
+		return new Storage();
 	}
 
 	// helper
 
 	private CommentThread _getCommentThread(String id) throws StorageException, PermissionException, NotFoundException {
-		return (CommentThread) getStorage().load(CommentThread.class, id);
+		return (CommentThread) getStorage().load(id);
 	}
 
 	private Comment _getComment(String id) throws StorageException, PermissionException, NotFoundException {
-		return (Comment) getStorage().load(Comment.class, id);
+		return (Comment) getStorage().load(id);
 	}
 
 	private JSONObject _serializeComment(Comment comment, Agent author) throws StorageException, PermissionException {
@@ -90,7 +86,7 @@ public class ThreadedCommentService extends RESTService {
 		json.put("body", comment.getBody());
 		json.put("upvotes", comment.getUpvotes());
 		json.put("downvotes", comment.getDownvotes());
-		json.put("myRating", comment.getVote(getContext().getMainAgent().getId()));
+		json.put("myRating", comment.getVote(Context.get().getMainAgent().getIdentifier()));
 		json.put("replyCount", comment.getCommentCount());
 
 		return json;
@@ -104,8 +100,8 @@ public class ThreadedCommentService extends RESTService {
 		else
 			json.put("name", "Unknown");
 
-		json.put("id", agent.getId());
-		json.put("isMe", agent.getId() == getContext().getMainAgent().getId());
+		json.put("id", agent.getIdentifier());
+		json.put("isMe", agent.equals(Context.get().getMainAgent()));
 
 		return json;
 	}
@@ -124,7 +120,7 @@ public class ThreadedCommentService extends RESTService {
 	 * @param reader Id of the agent with read-only access.
 	 * @return Id of the comment thread to be stored by the using serivce.
 	 */
-	public String createCommentThread(long owner, long writer, long reader) {
+	public String createCommentThread(String owner, String writer, String reader) {
 		try {
 			CommentThread thread = getStorage().init(new CommentThread(new Permissions(owner, writer, reader)));
 			return thread.getId();
@@ -197,7 +193,7 @@ public class ThreadedCommentService extends RESTService {
 
 				JSONArray list = new JSONArray();
 				for (Comment comment : comments) {
-					list.add(service._serializeComment(comment, Context.getCurrent().getAgent(comment.getAgentId())));
+					list.add(service._serializeComment(comment, Context.get().fetchAgent(comment.getAgentId())));
 				}
 
 				JSONObject response = new JSONObject();
@@ -208,13 +204,16 @@ public class ThreadedCommentService extends RESTService {
 				response.put("comments", list);
 
 				return Response.ok().entity(response.toJSONString()).build();
-			} catch (AgentLockedException | PermissionException e) {
+			} catch (PermissionException e) {
+				e.printStackTrace();
 				return Response.status(Status.FORBIDDEN).entity("Forbidden").build();
-			} catch (StorageException | AgentNotKnownException e) {
-				return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Internal Server Error").build();
 			} catch (NotFoundException e) {
+				e.printStackTrace();
 				return Response.status(Status.NOT_FOUND).entity("Not Found").build();
-			}
+			} catch (Exception e) {
+				e.printStackTrace();
+				return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Internal Server Error").build();
+			} 
 		}
 
 		/**
@@ -243,15 +242,17 @@ public class ThreadedCommentService extends RESTService {
 				notes = "Create a new Comment")
 		public Response createComment(@PathParam("id") String parentId, String body) {
 			try {
-				Comment comment = new Comment(Context.getCurrent().getMainAgent().getId(), new Date(), body);
+				Comment comment = new Comment(Context.getCurrent().getMainAgent().getIdentifier(), new Date(), body);
 				service._getCommentThread(parentId).addComment(comment);
 				return Response.status(Status.CREATED).entity(comment.getId()).build();
 			} catch (PermissionException e) {
+				e.printStackTrace();
 				return Response.status(Status.FORBIDDEN).entity("Forbidden").build();
 			} catch (StorageException e) {
 				e.printStackTrace();
 				return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Internal Server Error").build();
 			} catch (NotFoundException e) {
+				e.printStackTrace();
 				return Response.status(Status.NOT_FOUND).entity("Not Found").build();
 			}
 		}
@@ -282,14 +283,17 @@ public class ThreadedCommentService extends RESTService {
 				notes = "Create a new Comment (reply)")
 		public Response createCommentReply(@PathParam("id") String parentId, String body) {
 			try {
-				Comment comment = new Comment(Context.getCurrent().getMainAgent().getId(), new Date(), body);
+				Comment comment = new Comment(Context.getCurrent().getMainAgent().getIdentifier(), new Date(), body);
 				service._getComment(parentId).addComment(comment);
 				return Response.status(Status.CREATED).entity(comment.getId()).build();
 			} catch (PermissionException e) {
+				e.printStackTrace();
 				return Response.status(Status.FORBIDDEN).entity("Forbidden").build();
 			} catch (StorageException e) {
+				e.printStackTrace();
 				return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Internal Server Error").build();
 			} catch (NotFoundException e) {
+				e.printStackTrace();
 				return Response.status(Status.NOT_FOUND).entity("Not Found").build();
 			}
 		}
@@ -323,7 +327,7 @@ public class ThreadedCommentService extends RESTService {
 
 				JSONArray list = new JSONArray();
 				for (Comment comment : comments) {
-					list.add(service._serializeComment(comment, Context.getCurrent().getAgent(comment.getAgentId())));
+					list.add(service._serializeComment(comment, Context.getCurrent().fetchAgent(comment.getAgentId())));
 				}
 
 				JSONObject response = new JSONObject();
@@ -332,12 +336,15 @@ public class ThreadedCommentService extends RESTService {
 
 				return Response.ok().entity(response.toJSONString()).build();
 			} catch (PermissionException e) {
+				e.printStackTrace();
 				return Response.status(Status.FORBIDDEN).entity("Forbidden").build();
-			} catch (StorageException | AgentNotKnownException e) {
-				return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Internal Server Error").build();
 			} catch (NotFoundException e) {
+				e.printStackTrace();
 				return Response.status(Status.NOT_FOUND).entity("Not Found").build();
-			}
+			} catch (Exception e) {
+				e.printStackTrace();
+				return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Internal Server Error").build();
+			} 
 		}
 
 		/**
@@ -368,16 +375,19 @@ public class ThreadedCommentService extends RESTService {
 
 				return Response
 						.ok()
-						.entity(service._serializeComment(comment, Context.getCurrent().getAgent(comment.getAgentId()))
+						.entity(service._serializeComment(comment, Context.getCurrent().fetchAgent(comment.getAgentId()))
 								.toJSONString()).build();
 
 			} catch (PermissionException e) {
+				e.printStackTrace();
 				return Response.status(Status.FORBIDDEN).entity("Forbidden").build();
-			} catch (StorageException | AgentNotKnownException e) {
-				return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Internal Server Error").build();
 			} catch (NotFoundException e) {
+				e.printStackTrace();
 				return Response.status(Status.NOT_FOUND).entity("Not Found").build();
-			}
+			} catch (Exception e) {
+				e.printStackTrace();
+				return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Internal Server Error").build();
+			} 
 		}
 
 		/**
@@ -410,15 +420,18 @@ public class ThreadedCommentService extends RESTService {
 				comment.setBody(body);
 				return Response
 						.ok()
-						.entity(service._serializeComment(comment, Context.getCurrent().getAgent(comment.getAgentId()))
+						.entity(service._serializeComment(comment, Context.getCurrent().fetchAgent(comment.getAgentId()))
 								.toJSONString()).build();
 			} catch (PermissionException e) {
+				e.printStackTrace();
 				return Response.status(Status.FORBIDDEN).entity("Forbidden").build();
-			} catch (StorageException | AgentNotKnownException e) {
-				return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Internal Server Error").build();
 			} catch (NotFoundException e) {
+				e.printStackTrace();
 				return Response.status(Status.NOT_FOUND).entity("Not Found").build();
-			}
+			} catch (Exception e) {
+				e.printStackTrace();
+				return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Internal Server Error").build();
+			} 
 		}
 
 		/**
@@ -447,14 +460,17 @@ public class ThreadedCommentService extends RESTService {
 			try {
 				Comment comment = service._getComment(id);
 				String response = service._serializeComment(comment,
-						Context.getCurrent().getAgent(comment.getAgentId())).toJSONString();
+						Context.getCurrent().fetchAgent(comment.getAgentId())).toJSONString();
 				comment.delete();
 				return Response.ok().entity(response).build();
 			} catch (PermissionException e) {
+				e.printStackTrace();
 				return Response.status(Status.FORBIDDEN).entity("Forbidden").build();
 			} catch (NotFoundException e) {
+				e.printStackTrace();
 				return Response.status(Status.NOT_FOUND).entity("Not Found").build();
-			} catch (StorageException | AgentNotKnownException e) {
+			} catch (Exception e) {
+				e.printStackTrace();
 				return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Internal Server Error").build();
 			}
 		}
@@ -486,7 +502,7 @@ public class ThreadedCommentService extends RESTService {
 		public Response addVote(@PathParam("id") String commentId, String body) {
 			try {
 				Comment c = service._getComment(commentId);
-				c.vote(Context.getCurrent().getMainAgent().getId(), body.equals("true"));
+				c.vote(Context.getCurrent().getMainAgent().getIdentifier(), body.equals("true"));
 
 				JSONObject response = new JSONObject();
 				response.put("upvotes", c.getUpvotes());
@@ -494,10 +510,13 @@ public class ThreadedCommentService extends RESTService {
 
 				return Response.status(Status.CREATED).entity(response.toJSONString()).build();
 			} catch (PermissionException e) {
+				e.printStackTrace();
 				return Response.status(Status.FORBIDDEN).entity("Forbidden").build();
 			} catch (StorageException e) {
+				e.printStackTrace();
 				return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Internal Server Error").build();
 			} catch (NotFoundException e) {
+				e.printStackTrace();
 				return Response.status(Status.NOT_FOUND).entity("Not Found").build();
 			}
 		}

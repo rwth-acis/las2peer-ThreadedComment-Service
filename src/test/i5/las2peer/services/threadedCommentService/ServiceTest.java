@@ -4,15 +4,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import i5.las2peer.api.p2p.ServiceNameVersion;
+import i5.las2peer.connectors.webConnector.WebConnector;
+import i5.las2peer.connectors.webConnector.client.ClientResponse;
+import i5.las2peer.connectors.webConnector.client.MiniClient;
 import i5.las2peer.p2p.LocalNode;
-import i5.las2peer.p2p.ServiceNameVersion;
-import i5.las2peer.security.ServiceAgent;
-import i5.las2peer.security.UserAgent;
+import i5.las2peer.security.ServiceAgentImpl;
+import i5.las2peer.security.UserAgentImpl;
 import i5.las2peer.services.commentManagementService.CommentManagementService;
 import i5.las2peer.testing.MockAgentFactory;
-import i5.las2peer.webConnector.WebConnector;
-import i5.las2peer.webConnector.client.ClientResponse;
-import i5.las2peer.webConnector.client.MiniClient;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -36,12 +36,14 @@ public class ServiceTest {
 	private static WebConnector connector;
 	private static ByteArrayOutputStream logStream;
 
-	private static UserAgent agentAdam;
-	private static UserAgent agentEve;
-	private static UserAgent agentAbel;
+	private static UserAgentImpl agentAdam;
+	private static UserAgentImpl agentEve;
+	private static UserAgentImpl agentAbel;
+	private static UserAgentImpl agentKlaus;
 	private static final String passAdam = "adamspass";
 	private static final String passEve = "evespass";
 	private static final String passAbel = "abelspass";
+	private static final String passKlaus = "klauspass";
 
 	private static final ServiceNameVersion testCommentService = new ServiceNameVersion(
 			ThreadedCommentService.class.getCanonicalName(), "0.1");
@@ -77,23 +79,26 @@ public class ServiceTest {
 		// start node
 		node = LocalNode.newNode();
 		agentAdam = MockAgentFactory.getAdam();
-		agentAdam.unlockPrivateKey(passAdam);
+		agentAdam.unlock(passAdam);
 		agentEve = MockAgentFactory.getEve();
-		agentEve.unlockPrivateKey(passEve);
+		agentEve.unlock(passEve);
 		agentAbel = MockAgentFactory.getAbel();
-		agentAbel.unlockPrivateKey(passAbel);
+		agentAbel.unlock(passAbel);
+		agentKlaus = UserAgentImpl.createUserAgent(passKlaus);
+		agentKlaus.unlock(passKlaus);
 		node.storeAgent(agentAdam);
 		node.storeAgent(agentEve);
 		node.storeAgent(agentAbel);
+		node.storeAgent(agentKlaus);
 		node.launch();
 
-		ServiceAgent testService = ServiceAgent.createServiceAgent(testCommentService, "a pass");
-		testService.unlockPrivateKey("a pass");
+		ServiceAgentImpl testService = ServiceAgentImpl.createServiceAgent(testCommentService, "a pass");
+		testService.unlock("a pass");
 
 		node.registerReceiver(testService);
 
-		ServiceAgent testServiceExample = ServiceAgent.createServiceAgent(testCommentManagementService, "a pass");
-		testServiceExample.unlockPrivateKey("a pass");
+		ServiceAgentImpl testServiceExample = ServiceAgentImpl.createServiceAgent(testCommentManagementService, "a pass");
+		testServiceExample.unlock("a pass");
 
 		node.registerReceiver(testServiceExample);
 
@@ -108,6 +113,7 @@ public class ServiceTest {
 		agentAdam = MockAgentFactory.getAdam();
 		agentEve = MockAgentFactory.getEve();
 		agentAbel = MockAgentFactory.getAbel();
+		agentKlaus.lockPrivateKey();
 	}
 
 	/**
@@ -143,15 +149,19 @@ public class ServiceTest {
 			// create clients
 			MiniClient cAdam = new MiniClient();
 			cAdam.setAddressPort(HTTP_ADDRESS, HTTP_PORT);
-			cAdam.setLogin(Long.toString(agentAdam.getId()), passAdam);
+			cAdam.setLogin(agentAdam.getIdentifier(), passAdam);
 
 			MiniClient cEve = new MiniClient();
 			cEve.setAddressPort(HTTP_ADDRESS, HTTP_PORT);
-			cEve.setLogin(Long.toString(agentEve.getId()), passEve);
+			cEve.setLogin(agentEve.getIdentifier(), passEve);
 
 			MiniClient cAbel = new MiniClient();
 			cAbel.setAddressPort(HTTP_ADDRESS, HTTP_PORT);
-			cAbel.setLogin(Long.toString(agentAbel.getId()), passAbel);
+			cAbel.setLogin(agentAbel.getIdentifier(), passAbel);
+			
+			MiniClient cKlaus = new MiniClient();
+			cKlaus.setAddressPort(HTTP_ADDRESS, HTTP_PORT);
+			cKlaus.setLogin(agentKlaus.getIdentifier(), passKlaus);
 
 			MiniClient cAnonymous = new MiniClient();
 			cAnonymous.setAddressPort(HTTP_ADDRESS, HTTP_PORT);
@@ -195,7 +205,8 @@ public class ServiceTest {
 			System.out.println("GetCommentThread: " + result4.getResponse().trim());
 
 			// get comment thread without permission
-			ClientResponse result5 = cAnonymous.sendRequest("GET", mainPath + "threads/" + threadId, "");
+			ClientResponse result5 = cKlaus.sendRequest("GET", mainPath + "threads/" + threadId, "");
+			System.out.println(result5.getResponse().trim());
 			assertEquals(403, result5.getHttpCode());
 			assertTrue(result5.getResponse().trim().contains("Forbidden"));
 
