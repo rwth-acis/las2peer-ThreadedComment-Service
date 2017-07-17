@@ -9,6 +9,7 @@ import i5.las2peer.connectors.webConnector.WebConnector;
 import i5.las2peer.connectors.webConnector.client.ClientResponse;
 import i5.las2peer.connectors.webConnector.client.MiniClient;
 import i5.las2peer.p2p.LocalNode;
+import i5.las2peer.p2p.LocalNodeManager;
 import i5.las2peer.security.ServiceAgentImpl;
 import i5.las2peer.security.UserAgentImpl;
 import i5.las2peer.services.commentManagementService.CommentManagementService;
@@ -77,7 +78,7 @@ public class ServiceTest {
 		HTTP_PORT = getUnusedPort();
 
 		// start node
-		node = LocalNode.newNode();
+		node = new LocalNodeManager().newNode();
 		agentAdam = MockAgentFactory.getAdam();
 		agentAdam.unlock(passAdam);
 		agentEve = MockAgentFactory.getEve();
@@ -129,8 +130,6 @@ public class ServiceTest {
 
 		connector = null;
 		node = null;
-
-		LocalNode.reset();
 
 		System.out.println("Connector-Log:");
 		System.out.println("--------------");
