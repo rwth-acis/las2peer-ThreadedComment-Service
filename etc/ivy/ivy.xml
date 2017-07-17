@@ -6,6 +6,6 @@
 	</publications>
     <dependencies>
         <dependency org="i5" name="las2peer-bundle" rev="0.7.0" />
-        <dependency org="junit" name="junit" rev="4.11" force="true" />
+        <dependency org="junit" name="junit" rev="4.12" />
     </dependencies>
 </ivy-module>
