@@ -168,7 +168,7 @@ public class ThreadedCommentService extends RESTService {
 		 * Get the comment thread including comments.
 		 * 
 		 * @param threadId Id of the thread
-		 * @return
+		 * @return Returns the comment thread including comments identified by given thread id
 		 */
 		@GET
 		@Path("/threads/{id}")
@@ -221,7 +221,7 @@ public class ThreadedCommentService extends RESTService {
 		 * 
 		 * @param parentId Id of the parent
 		 * @param body Comment body
-		 * @return
+		 * @return Returns a HTTP response object with appropriate status code
 		 */
 		@POST
 		@Path("/threads/{id}")
@@ -262,7 +262,7 @@ public class ThreadedCommentService extends RESTService {
 		 * 
 		 * @param parentId Id of the parent comment
 		 * @param body Comment body
-		 * @return
+		 * @return Returns a HTTP response object with appropriate status code
 		 */
 		@POST
 		@Path("/comment/{id}/comments")
@@ -299,10 +299,10 @@ public class ThreadedCommentService extends RESTService {
 		}
 
 		/**
-		 * Get replys to another comment
+		 * Get replies to another comment
 		 * 
 		 * @param commentId
-		 * @return
+		 * @return Returns the list of replies to given comment id
 		 */
 		@GET
 		@Path("/comment/{id}/comments")
@@ -310,7 +310,7 @@ public class ThreadedCommentService extends RESTService {
 		@ApiResponses(
 				value = { @ApiResponse(
 						code = HttpURLConnection.HTTP_OK,
-						message = "Comment replys"), @ApiResponse(
+						message = "Comment replies"), @ApiResponse(
 						code = HttpURLConnection.HTTP_FORBIDDEN,
 						message = "Forbidden"), @ApiResponse(
 						code = HttpURLConnection.HTTP_NOT_FOUND,
@@ -351,7 +351,7 @@ public class ThreadedCommentService extends RESTService {
 		 * Get a comment by id
 		 * 
 		 * @param id Id of the comment
-		 * @return
+		 * @return Returns the comment for the given comment id
 		 */
 		@GET
 		@Path("/comment/{id}")
@@ -395,7 +395,7 @@ public class ThreadedCommentService extends RESTService {
 		 * 
 		 * @param id comment id
 		 * @param body comment body
-		 * @return
+		 * @return Returns a HTTP response object with appropriate status code
 		 */
 		@PUT
 		@Path("/comment/{id}")
@@ -438,7 +438,7 @@ public class ThreadedCommentService extends RESTService {
 		 * Deletes a comment
 		 * 
 		 * @param id comment id
-		 * @return
+		 * @return Returns a HTTP response object with appropriate status code
 		 */
 		@DELETE
 		@Path("/comment/{id}")
@@ -480,7 +480,7 @@ public class ThreadedCommentService extends RESTService {
 		 * 
 		 * @param commentId comment id
 		 * @param body "true" for upvote, "false" for downvote
-		 * @return
+		 * @return Returns a HTTP response object with appropriate status code
 		 */
 		@POST
 		@Path("/comment/{id}/votes")

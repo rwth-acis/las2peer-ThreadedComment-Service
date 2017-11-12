@@ -10,10 +10,6 @@
     <property name="user_agent3.path" value="${startup}/agent-user-${las2peer_user3.name}.xml" />
     <property name="passphrases.path" value="${startup}/passphrases.txt" />
     
-    <presetdef name="javac">
-        <javac includeantruntime="false" />
-    </presetdef>
-	
     <property name="src.main" location="src/main" />
     <property name="src.junit" location="src/test" />
 	
@@ -102,6 +98,7 @@
             classpathref="libraries"
             debug="on"
             encoding="UTF-8"
+        	includeantruntime="false"
             />
         <copy todir="${tmp.classes}">
             <fileset dir="${src.main}">
@@ -117,6 +114,7 @@
             classpathref="libraries"
             debug="on"
             encoding="UTF-8"
+        	includeantruntime="false"
             />
         <copy todir="${tmp.junit}">
             <fileset dir="${src.junit}">
@@ -138,11 +136,11 @@
             </manifest>
         </jar>
     	<jar jarfile="${export.jars}/${service2.name}-${service2.version}.jar">
-    	        	<fileset dir="${tmp.classes}" includes="${service2.path}/**" />
-    	            <manifest>
-    	                <attribute name="Library-Version" value="${service2.version}" />
-    	                <attribute name="Library-SymbolicName" value="${service2.name}" />
-    	            </manifest>
+        	<fileset dir="${tmp.classes}" includes="${service2.path}/**" />
+            <manifest>
+                <attribute name="Library-Version" value="${service2.version}" />
+                <attribute name="Library-SymbolicName" value="${service2.name}" />
+            </manifest>
     	</jar>
         <!-- Add the same Jar to the Service Directory !-->
         <jar jarfile="${service}/${service.name}-${service.version}.jar">
@@ -153,11 +151,11 @@
             </manifest>
         </jar>
     	<jar jarfile="${service}/${service2.name}-${service2.version}.jar">
-    	        	<fileset dir="${tmp.classes}" includes="${service2.path}/**" />
-    	            <manifest>
-    	                <attribute name="Library-Version" value="${service2.version}" />
-    	                <attribute name="Library-SymbolicName" value="${service2.name}" />
-    	            </manifest>
+        	<fileset dir="${tmp.classes}" includes="${service2.path}/**" />
+            <manifest>
+                <attribute name="Library-Version" value="${service2.version}" />
+                <attribute name="Library-SymbolicName" value="${service2.name}" />
+            </manifest>
     	</jar>
     </target>
 	

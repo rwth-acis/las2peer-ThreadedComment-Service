@@ -222,7 +222,7 @@ public abstract class Storable implements Serializable {
 	
 	/**
 	 * Get writer of this Storable. Can only be called before storing in a Storage.
-	 * @return
+	 * @return Returns the list of writer
 	 * @throws StorageException
 	 */
 	protected List<String> getWriter() throws StorageException {
@@ -246,7 +246,7 @@ public abstract class Storable implements Serializable {
 	
 	/**
 	 * Get reader of this Storable. Can only be called before storing in a Storage.
-	 * @return
+	 * @return Returns the list of reader
 	 * @throws StorageException
 	 */
 	protected List<String> getReader() throws StorageException {

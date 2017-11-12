@@ -112,7 +112,7 @@ public class Comment extends Storable {
 	/**
 	 * date and time of creation
 	 * 
-	 * @return
+	 * @return Returns the date
 	 */
 	public Date getDate() {
 		return date;
@@ -121,7 +121,7 @@ public class Comment extends Storable {
 	/**
 	 * comment body
 	 * 
-	 * @return
+	 * @return Returns the body
 	 */
 	public String getBody() {
 		return body;
@@ -178,7 +178,7 @@ public class Comment extends Storable {
 	/**
 	 * Get number of upvotes
 	 * 
-	 * @return
+	 * @return Returns the number of upvotes
 	 * @throws StorageException
 	 * @throws PermissionException
 	 */
@@ -189,7 +189,7 @@ public class Comment extends Storable {
 	/**
 	 * Get number of downvotes
 	 * 
-	 * @return
+	 * @return Returns the number of downvotes
 	 * @throws PermissionException
 	 * @throws StorageException
 	 */
@@ -200,7 +200,7 @@ public class Comment extends Storable {
 	/**
 	 * Get vote of a user
 	 * 
-	 * @param agentId
+	 * @param agentId The agentId to get votes for
 	 * @return 1 = upvote, 0 = no vote, -1 = downvote
 	 * @throws PermissionException
 	 * @throws StorageException
