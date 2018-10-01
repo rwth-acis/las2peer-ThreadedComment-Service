@@ -5,7 +5,7 @@
 		<artifact type="jar" ext="jar" conf="default"/>
 	</publications>
     <dependencies>
-        <dependency org="i5" name="las2peer-bundle" rev="0.7.0" />
+        <dependency org="i5" name="las2peer-bundle" rev="0.7.6" />
         <dependency org="junit" name="junit" rev="4.12" />
     </dependencies>
 </ivy-module>

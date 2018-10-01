@@ -4,6 +4,16 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.net.ServerSocket;
+
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import i5.las2peer.api.p2p.ServiceNameVersion;
 import i5.las2peer.connectors.webConnector.WebConnector;
 import i5.las2peer.connectors.webConnector.client.ClientResponse;
@@ -14,15 +24,6 @@ import i5.las2peer.security.ServiceAgentImpl;
 import i5.las2peer.security.UserAgentImpl;
 import i5.las2peer.services.commentManagementService.CommentManagementService;
 import i5.las2peer.testing.MockAgentFactory;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.net.ServerSocket;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 /**
  * Tests both services
@@ -47,9 +48,9 @@ public class ServiceTest {
 	private static final String passKlaus = "klauspass";
 
 	private static final ServiceNameVersion testCommentService = new ServiceNameVersion(
-			ThreadedCommentService.class.getCanonicalName(), "0.1");
+			ThreadedCommentService.class.getCanonicalName(), "0.2");
 	private static final ServiceNameVersion testCommentManagementService = new ServiceNameVersion(
-			CommentManagementService.class.getCanonicalName(), "0.1");
+			CommentManagementService.class.getCanonicalName(), "0.2");
 
 	private static final String mainPath = "comments/";
 	private static final String mainPathManager = "commentmanagement/";
@@ -98,7 +99,8 @@ public class ServiceTest {
 
 		node.registerReceiver(testService);
 
-		ServiceAgentImpl testServiceExample = ServiceAgentImpl.createServiceAgent(testCommentManagementService, "a pass");
+		ServiceAgentImpl testServiceExample = ServiceAgentImpl.createServiceAgent(testCommentManagementService,
+				"a pass");
 		testServiceExample.unlock("a pass");
 
 		node.registerReceiver(testServiceExample);
@@ -147,23 +149,24 @@ public class ServiceTest {
 		try {
 			// create clients
 			MiniClient cAdam = new MiniClient();
-			cAdam.setAddressPort(HTTP_ADDRESS, HTTP_PORT);
+			String endpoint = connector.getHttpEndpoint();
+			cAdam.setConnectorEndpoint(endpoint);
 			cAdam.setLogin(agentAdam.getIdentifier(), passAdam);
 
 			MiniClient cEve = new MiniClient();
-			cEve.setAddressPort(HTTP_ADDRESS, HTTP_PORT);
+			cEve.setConnectorEndpoint(endpoint);
 			cEve.setLogin(agentEve.getIdentifier(), passEve);
 
 			MiniClient cAbel = new MiniClient();
-			cAbel.setAddressPort(HTTP_ADDRESS, HTTP_PORT);
+			cAbel.setConnectorEndpoint(endpoint);
 			cAbel.setLogin(agentAbel.getIdentifier(), passAbel);
-			
+
 			MiniClient cKlaus = new MiniClient();
-			cKlaus.setAddressPort(HTTP_ADDRESS, HTTP_PORT);
+			cKlaus.setConnectorEndpoint(endpoint);
 			cKlaus.setLogin(agentKlaus.getIdentifier(), passKlaus);
 
 			MiniClient cAnonymous = new MiniClient();
-			cAnonymous.setAddressPort(HTTP_ADDRESS, HTTP_PORT);
+			cAnonymous.setConnectorEndpoint(endpoint);
 
 			// create comment thread
 			ClientResponse result = cAdam.sendRequest("POST", mainPathManager + "threads",
@@ -188,8 +191,8 @@ public class ServiceTest {
 			System.out.println("AddComment: " + commentId);
 
 			// add comment without permission
-			ClientResponse result3 = cAbel
-					.sendRequest("POST", mainPath + "threads/" + threadId, "comment_evil_content");
+			ClientResponse result3 = cAbel.sendRequest("POST", mainPath + "threads/" + threadId,
+					"comment_evil_content");
 			assertEquals(403, result3.getHttpCode());
 			assertTrue(result3.getResponse().contains("Forbidden"));
 

@@ -1,20 +1,5 @@
 package i5.las2peer.services.commentManagementService;
 
-import i5.las2peer.api.Context;
-import i5.las2peer.api.persistency.Envelope;
-import i5.las2peer.api.persistency.EnvelopeNotFoundException;
-import i5.las2peer.api.security.Agent;
-import i5.las2peer.api.security.GroupAgent;
-import i5.las2peer.restMapper.RESTService;
-import i5.las2peer.restMapper.annotations.ServicePath;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import io.swagger.annotations.Contact;
-import io.swagger.annotations.Info;
-import io.swagger.annotations.License;
-import io.swagger.annotations.SwaggerDefinition;
-
 import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.util.List;
@@ -30,6 +15,20 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import i5.las2peer.api.Context;
+import i5.las2peer.api.persistency.Envelope;
+import i5.las2peer.api.persistency.EnvelopeNotFoundException;
+import i5.las2peer.api.security.Agent;
+import i5.las2peer.api.security.GroupAgent;
+import i5.las2peer.restMapper.RESTService;
+import i5.las2peer.restMapper.annotations.ServicePath;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.Contact;
+import io.swagger.annotations.Info;
+import io.swagger.annotations.License;
+import io.swagger.annotations.SwaggerDefinition;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
@@ -43,13 +42,13 @@ import net.minidev.json.parser.JSONParser;
 public class CommentManagementService extends RESTService {
 
 	private static String containerIdentifier = "COMMENTEXAMPLESERVICE";
+	private static String tcs = "i5.las2peer.services.threadedCommentService.ThreadedCommentService@0.2";
 
 	// RMI methods
 
 	public String createCommentThread(String owner, String writer, String reader) throws Exception {
 		// invoke remote service method
-		Object result = Context.get().invoke("i5.las2peer.services.threadedCommentService.ThreadedCommentService@0.1",
-				"createCommentThread", new Serializable[] { owner, writer, reader });
+		Object result = Context.get().invoke(tcs, "createCommentThread", new Serializable[] { owner, writer, reader });
 
 		if (result != null) {
 			return (String) result;
@@ -60,8 +59,7 @@ public class CommentManagementService extends RESTService {
 
 	public boolean deleteCommentThread(String id) throws Exception {
 		// invoke remote service method
-		Object result = Context.get().invoke("i5.las2peer.services.threadedCommentService.ThreadedCommentService@0.1",
-				"deleteCommentThread", new Serializable[] { id });
+		Object result = Context.get().invoke(tcs, "deleteCommentThread", new Serializable[] { id });
 
 		if (result != null) {
 			return (Boolean) result;
@@ -83,15 +81,14 @@ public class CommentManagementService extends RESTService {
 	}
 
 	private void storeContainer(Container container) throws Exception {
-		Envelope env ;
+		Envelope env;
 		try {
 			env = Context.get().requestEnvelope(containerIdentifier);
-		}
-		catch (EnvelopeNotFoundException e) {
+		} catch (EnvelopeNotFoundException e) {
 			env = Context.get().createEnvelope(containerIdentifier);
 			env.setPublic();
 		}
-		
+
 		env.setContent(container);
 		Context.get().storeEnvelope(env);
 	}
@@ -127,7 +124,7 @@ public class CommentManagementService extends RESTService {
 	@SwaggerDefinition(
 			info = @Info(
 					title = "las2peer Comment Management Service",
-					version = "0.1",
+					version = "0.2",
 					description = "Create and manage comment threads to integrate them into websites.",
 					termsOfService = "",
 					contact = @Contact(
@@ -147,9 +144,10 @@ public class CommentManagementService extends RESTService {
 		@ApiResponses(
 				value = { @ApiResponse(
 						code = HttpURLConnection.HTTP_OK,
-						message = "List of threads"), @ApiResponse(
-						code = HttpURLConnection.HTTP_INTERNAL_ERROR,
-						message = "Internal Server Error") })
+						message = "List of threads"),
+						@ApiResponse(
+								code = HttpURLConnection.HTTP_INTERNAL_ERROR,
+								message = "Internal Server Error") })
 		public Response getThreads() {
 			List<String> threads = service.fetchContainer().getThreads();
 
@@ -169,9 +167,10 @@ public class CommentManagementService extends RESTService {
 		@ApiResponses(
 				value = { @ApiResponse(
 						code = HttpURLConnection.HTTP_CREATED,
-						message = "Id"), @ApiResponse(
-						code = HttpURLConnection.HTTP_INTERNAL_ERROR,
-						message = "Internal Server Error") })
+						message = "Id"),
+						@ApiResponse(
+								code = HttpURLConnection.HTTP_INTERNAL_ERROR,
+								message = "Internal Server Error") })
 		public Response createThread(String content) {
 			try {
 				JSONParser parser = new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE);
@@ -200,9 +199,10 @@ public class CommentManagementService extends RESTService {
 		@ApiResponses(
 				value = { @ApiResponse(
 						code = HttpURLConnection.HTTP_OK,
-						message = "Deleted"), @ApiResponse(
-						code = HttpURLConnection.HTTP_INTERNAL_ERROR,
-						message = "Internal Server Error") })
+						message = "Deleted"),
+						@ApiResponse(
+								code = HttpURLConnection.HTTP_INTERNAL_ERROR,
+								message = "Internal Server Error") })
 		public Response deleteThread(@PathParam("id") String id) {
 			/*
 			 * Please note that this is insecure. Everybody could delete a comment thread, because this service is also

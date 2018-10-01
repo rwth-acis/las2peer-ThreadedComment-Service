@@ -1,26 +1,5 @@
 package i5.las2peer.services.threadedCommentService;
 
-import i5.las2peer.api.Context;
-import i5.las2peer.api.security.Agent;
-import i5.las2peer.api.security.UserAgent;
-import i5.las2peer.restMapper.RESTService;
-import i5.las2peer.restMapper.annotations.ServicePath;
-import i5.las2peer.services.threadedCommentService.data.Comment;
-import i5.las2peer.services.threadedCommentService.data.CommentThread;
-import i5.las2peer.services.threadedCommentService.data.Permissions;
-import i5.las2peer.services.threadedCommentService.storage.Storage;
-import i5.las2peer.services.threadedCommentService.storage.NotFoundException;
-import i5.las2peer.services.threadedCommentService.storage.PermissionException;
-import i5.las2peer.services.threadedCommentService.storage.StorageException;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import io.swagger.annotations.Contact;
-import io.swagger.annotations.Info;
-import io.swagger.annotations.License;
-import io.swagger.annotations.SwaggerDefinition;
-
 import java.net.HttpURLConnection;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -38,6 +17,26 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import i5.las2peer.api.Context;
+import i5.las2peer.api.security.Agent;
+import i5.las2peer.api.security.UserAgent;
+import i5.las2peer.restMapper.RESTService;
+import i5.las2peer.restMapper.annotations.ServicePath;
+import i5.las2peer.services.threadedCommentService.data.Comment;
+import i5.las2peer.services.threadedCommentService.data.CommentThread;
+import i5.las2peer.services.threadedCommentService.data.Permissions;
+import i5.las2peer.services.threadedCommentService.storage.NotFoundException;
+import i5.las2peer.services.threadedCommentService.storage.PermissionException;
+import i5.las2peer.services.threadedCommentService.storage.Storage;
+import i5.las2peer.services.threadedCommentService.storage.StorageException;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.Contact;
+import io.swagger.annotations.Info;
+import io.swagger.annotations.License;
+import io.swagger.annotations.SwaggerDefinition;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 
@@ -54,7 +53,7 @@ import net.minidev.json.JSONObject;
 public class ThreadedCommentService extends RESTService {
 
 	// TODO make use of Jersey features
-	
+
 	// TODO refactor storage
 
 	/**
@@ -150,7 +149,7 @@ public class ThreadedCommentService extends RESTService {
 	@SwaggerDefinition(
 			info = @Info(
 					title = "las2peer Threaded Comment Service",
-					version = "0.1",
+					version = "0.2",
 					description = "A las2peer Service providing threaded comment functionality intended to be integrated with other services.",
 					termsOfService = "",
 					contact = @Contact(
@@ -176,13 +175,16 @@ public class ThreadedCommentService extends RESTService {
 		@ApiResponses(
 				value = { @ApiResponse(
 						code = HttpURLConnection.HTTP_OK,
-						message = "Comment Thread"), @ApiResponse(
-						code = HttpURLConnection.HTTP_FORBIDDEN,
-						message = "Forbidden"), @ApiResponse(
-						code = HttpURLConnection.HTTP_NOT_FOUND,
-						message = "Not Found"), @ApiResponse(
-						code = HttpURLConnection.HTTP_INTERNAL_ERROR,
-						message = "Internal Server Error") })
+						message = "Comment Thread"),
+						@ApiResponse(
+								code = HttpURLConnection.HTTP_FORBIDDEN,
+								message = "Forbidden"),
+						@ApiResponse(
+								code = HttpURLConnection.HTTP_NOT_FOUND,
+								message = "Not Found"),
+						@ApiResponse(
+								code = HttpURLConnection.HTTP_INTERNAL_ERROR,
+								message = "Internal Server Error") })
 		@ApiOperation(
 				value = "getCommentThread",
 				notes = "Get comment thread including comments")
@@ -213,7 +215,7 @@ public class ThreadedCommentService extends RESTService {
 			} catch (Exception e) {
 				e.printStackTrace();
 				return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Internal Server Error").build();
-			} 
+			}
 		}
 
 		/**
@@ -230,13 +232,16 @@ public class ThreadedCommentService extends RESTService {
 		@ApiResponses(
 				value = { @ApiResponse(
 						code = HttpURLConnection.HTTP_CREATED,
-						message = "Comment Id"), @ApiResponse(
-						code = HttpURLConnection.HTTP_FORBIDDEN,
-						message = "Forbidden"), @ApiResponse(
-						code = HttpURLConnection.HTTP_NOT_FOUND,
-						message = "Not Found"), @ApiResponse(
-						code = HttpURLConnection.HTTP_INTERNAL_ERROR,
-						message = "Internal Server Error") })
+						message = "Comment Id"),
+						@ApiResponse(
+								code = HttpURLConnection.HTTP_FORBIDDEN,
+								message = "Forbidden"),
+						@ApiResponse(
+								code = HttpURLConnection.HTTP_NOT_FOUND,
+								message = "Not Found"),
+						@ApiResponse(
+								code = HttpURLConnection.HTTP_INTERNAL_ERROR,
+								message = "Internal Server Error") })
 		@ApiOperation(
 				value = "createComment",
 				notes = "Create a new Comment")
@@ -271,13 +276,16 @@ public class ThreadedCommentService extends RESTService {
 		@ApiResponses(
 				value = { @ApiResponse(
 						code = HttpURLConnection.HTTP_CREATED,
-						message = "Comment Id"), @ApiResponse(
-						code = HttpURLConnection.HTTP_FORBIDDEN,
-						message = "Forbidden"), @ApiResponse(
-						code = HttpURLConnection.HTTP_NOT_FOUND,
-						message = "Not Found"), @ApiResponse(
-						code = HttpURLConnection.HTTP_INTERNAL_ERROR,
-						message = "Internal Server Error") })
+						message = "Comment Id"),
+						@ApiResponse(
+								code = HttpURLConnection.HTTP_FORBIDDEN,
+								message = "Forbidden"),
+						@ApiResponse(
+								code = HttpURLConnection.HTTP_NOT_FOUND,
+								message = "Not Found"),
+						@ApiResponse(
+								code = HttpURLConnection.HTTP_INTERNAL_ERROR,
+								message = "Internal Server Error") })
 		@ApiOperation(
 				value = "createCommentReply",
 				notes = "Create a new Comment (reply)")
@@ -310,13 +318,16 @@ public class ThreadedCommentService extends RESTService {
 		@ApiResponses(
 				value = { @ApiResponse(
 						code = HttpURLConnection.HTTP_OK,
-						message = "Comment replies"), @ApiResponse(
-						code = HttpURLConnection.HTTP_FORBIDDEN,
-						message = "Forbidden"), @ApiResponse(
-						code = HttpURLConnection.HTTP_NOT_FOUND,
-						message = "Not Found"), @ApiResponse(
-						code = HttpURLConnection.HTTP_INTERNAL_ERROR,
-						message = "Internal Server Error") })
+						message = "Comment replies"),
+						@ApiResponse(
+								code = HttpURLConnection.HTTP_FORBIDDEN,
+								message = "Forbidden"),
+						@ApiResponse(
+								code = HttpURLConnection.HTTP_NOT_FOUND,
+								message = "Not Found"),
+						@ApiResponse(
+								code = HttpURLConnection.HTTP_INTERNAL_ERROR,
+								message = "Internal Server Error") })
 		@ApiOperation(
 				value = "getCommentReplys",
 				notes = "Get comment thread including comments")
@@ -344,7 +355,7 @@ public class ThreadedCommentService extends RESTService {
 			} catch (Exception e) {
 				e.printStackTrace();
 				return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Internal Server Error").build();
-			} 
+			}
 		}
 
 		/**
@@ -359,13 +370,16 @@ public class ThreadedCommentService extends RESTService {
 		@ApiResponses(
 				value = { @ApiResponse(
 						code = HttpURLConnection.HTTP_OK,
-						message = "Comment"), @ApiResponse(
-						code = HttpURLConnection.HTTP_FORBIDDEN,
-						message = "Forbidden"), @ApiResponse(
-						code = HttpURLConnection.HTTP_NOT_FOUND,
-						message = "Not Found"), @ApiResponse(
-						code = HttpURLConnection.HTTP_INTERNAL_ERROR,
-						message = "Internal Server Error") })
+						message = "Comment"),
+						@ApiResponse(
+								code = HttpURLConnection.HTTP_FORBIDDEN,
+								message = "Forbidden"),
+						@ApiResponse(
+								code = HttpURLConnection.HTTP_NOT_FOUND,
+								message = "Not Found"),
+						@ApiResponse(
+								code = HttpURLConnection.HTTP_INTERNAL_ERROR,
+								message = "Internal Server Error") })
 		@ApiOperation(
 				value = "Comment",
 				notes = "Get a comment by id.")
@@ -373,10 +387,11 @@ public class ThreadedCommentService extends RESTService {
 			try {
 				Comment comment = service._getComment(id);
 
-				return Response
-						.ok()
-						.entity(service._serializeComment(comment, Context.getCurrent().fetchAgent(comment.getAgentId()))
-								.toJSONString()).build();
+				return Response.ok()
+						.entity(service
+								._serializeComment(comment, Context.getCurrent().fetchAgent(comment.getAgentId()))
+								.toJSONString())
+						.build();
 
 			} catch (PermissionException e) {
 				e.printStackTrace();
@@ -387,7 +402,7 @@ public class ThreadedCommentService extends RESTService {
 			} catch (Exception e) {
 				e.printStackTrace();
 				return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Internal Server Error").build();
-			} 
+			}
 		}
 
 		/**
@@ -404,13 +419,16 @@ public class ThreadedCommentService extends RESTService {
 		@ApiResponses(
 				value = { @ApiResponse(
 						code = HttpURLConnection.HTTP_OK,
-						message = "Updated"), @ApiResponse(
-						code = HttpURLConnection.HTTP_FORBIDDEN,
-						message = "Forbidden"), @ApiResponse(
-						code = HttpURLConnection.HTTP_NOT_FOUND,
-						message = "Not Found"), @ApiResponse(
-						code = HttpURLConnection.HTTP_INTERNAL_ERROR,
-						message = "Internal Server Error") })
+						message = "Updated"),
+						@ApiResponse(
+								code = HttpURLConnection.HTTP_FORBIDDEN,
+								message = "Forbidden"),
+						@ApiResponse(
+								code = HttpURLConnection.HTTP_NOT_FOUND,
+								message = "Not Found"),
+						@ApiResponse(
+								code = HttpURLConnection.HTTP_INTERNAL_ERROR,
+								message = "Internal Server Error") })
 		@ApiOperation(
 				value = "editComment",
 				notes = "Edit a Comment")
@@ -418,10 +436,11 @@ public class ThreadedCommentService extends RESTService {
 			try {
 				Comment comment = service._getComment(id);
 				comment.setBody(body);
-				return Response
-						.ok()
-						.entity(service._serializeComment(comment, Context.getCurrent().fetchAgent(comment.getAgentId()))
-								.toJSONString()).build();
+				return Response.ok()
+						.entity(service
+								._serializeComment(comment, Context.getCurrent().fetchAgent(comment.getAgentId()))
+								.toJSONString())
+						.build();
 			} catch (PermissionException e) {
 				e.printStackTrace();
 				return Response.status(Status.FORBIDDEN).entity("Forbidden").build();
@@ -431,7 +450,7 @@ public class ThreadedCommentService extends RESTService {
 			} catch (Exception e) {
 				e.printStackTrace();
 				return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Internal Server Error").build();
-			} 
+			}
 		}
 
 		/**
@@ -446,21 +465,25 @@ public class ThreadedCommentService extends RESTService {
 		@ApiResponses(
 				value = { @ApiResponse(
 						code = HttpURLConnection.HTTP_OK,
-						message = "Deleted resource"), @ApiResponse(
-						code = HttpURLConnection.HTTP_FORBIDDEN,
-						message = "Forbidden"), @ApiResponse(
-						code = HttpURLConnection.HTTP_NOT_FOUND,
-						message = "Not Found"), @ApiResponse(
-						code = HttpURLConnection.HTTP_INTERNAL_ERROR,
-						message = "Internal Server Error") })
+						message = "Deleted resource"),
+						@ApiResponse(
+								code = HttpURLConnection.HTTP_FORBIDDEN,
+								message = "Forbidden"),
+						@ApiResponse(
+								code = HttpURLConnection.HTTP_NOT_FOUND,
+								message = "Not Found"),
+						@ApiResponse(
+								code = HttpURLConnection.HTTP_INTERNAL_ERROR,
+								message = "Internal Server Error") })
 		@ApiOperation(
 				value = "deleteComment",
 				notes = "Delete a Comment")
 		public Response deleteComment(@PathParam("id") String id) {
 			try {
 				Comment comment = service._getComment(id);
-				String response = service._serializeComment(comment,
-						Context.getCurrent().fetchAgent(comment.getAgentId())).toJSONString();
+				String response = service
+						._serializeComment(comment, Context.getCurrent().fetchAgent(comment.getAgentId()))
+						.toJSONString();
 				comment.delete();
 				return Response.ok().entity(response).build();
 			} catch (PermissionException e) {
@@ -488,13 +511,16 @@ public class ThreadedCommentService extends RESTService {
 		@ApiResponses(
 				value = { @ApiResponse(
 						code = HttpURLConnection.HTTP_CREATED,
-						message = "Vote submitted"), @ApiResponse(
-						code = HttpURLConnection.HTTP_FORBIDDEN,
-						message = "Forbidden"), @ApiResponse(
-						code = HttpURLConnection.HTTP_NOT_FOUND,
-						message = "Not Found"), @ApiResponse(
-						code = HttpURLConnection.HTTP_INTERNAL_ERROR,
-						message = "Internal Server Error") })
+						message = "Vote submitted"),
+						@ApiResponse(
+								code = HttpURLConnection.HTTP_FORBIDDEN,
+								message = "Forbidden"),
+						@ApiResponse(
+								code = HttpURLConnection.HTTP_NOT_FOUND,
+								message = "Not Found"),
+						@ApiResponse(
+								code = HttpURLConnection.HTTP_INTERNAL_ERROR,
+								message = "Internal Server Error") })
 		@ApiOperation(
 				value = "addVote",
 				notes = "Add a vote")
