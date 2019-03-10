@@ -48,9 +48,9 @@ public class ServiceTest {
 	private static final String passKlaus = "klauspass";
 
 	private static final ServiceNameVersion testCommentService = new ServiceNameVersion(
-			ThreadedCommentService.class.getCanonicalName(), "0.2");
+			ThreadedCommentService.class.getCanonicalName(), "0.2.0");
 	private static final ServiceNameVersion testCommentManagementService = new ServiceNameVersion(
-			CommentManagementService.class.getCanonicalName(), "0.2");
+			CommentManagementService.class.getCanonicalName(), "0.2.0");
 
 	private static final String mainPath = "comments/";
 	private static final String mainPathManager = "commentmanagement/";

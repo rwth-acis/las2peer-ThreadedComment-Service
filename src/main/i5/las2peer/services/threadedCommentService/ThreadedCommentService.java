@@ -149,7 +149,7 @@ public class ThreadedCommentService extends RESTService {
 	@SwaggerDefinition(
 			info = @Info(
 					title = "las2peer Threaded Comment Service",
-					version = "0.2",
+					version = "0.2.0",
 					description = "A las2peer Service providing threaded comment functionality intended to be integrated with other services.",
 					termsOfService = "",
 					contact = @Contact(
