@@ -42,7 +42,7 @@ import net.minidev.json.parser.JSONParser;
 public class CommentManagementService extends RESTService {
 
 	private static String containerIdentifier = "COMMENTEXAMPLESERVICE";
-	private static String tcs = "i5.las2peer.services.threadedCommentService.ThreadedCommentService@0.2.0";
+	private static String tcs = "i5.las2peer.services.threadedCommentService.ThreadedCommentService@0.3.0";
 
 	// RMI methods
 
